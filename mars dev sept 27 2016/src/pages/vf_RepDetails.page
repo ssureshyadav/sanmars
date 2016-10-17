@@ -1,0 +1,36 @@
+<apex:page standardController="Contact">
+    <apex:detail subject="{!Contact.Id}" relatedList="true"/>
+    
+   <!-- <apex:outputPanel rendered="{!IF((Contact.RecordType.Name == 'MARS'),true,false)}">
+        <c:MarsRepFundSummary ContactInfo="{!Contact}" />
+    </apex:outputPanel> -->
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script>
+        var j$ = jQuery.noConflict();
+        var titleName;
+        //j$('.pbBody').find('.brandTertiaryBrd').find('h3').css('background','red');
+        
+        //j$('.pbBody').find('.brandTertiaryBrd:eq(3)').find('h3').css('background', 'blue');
+        j$("iframe").each(function(){
+            j$(this).load(function() {
+                 if(j$(this).contents().find("body").find('div').attr('Id') != null)
+                 {
+                     titleName =j$(this).contents().find("body").find('div').attr('Id');
+                     myFunction();
+                 }
+                j$(this).height( j$(this).contents().find("body").height() );
+            });
+            
+        });
+        
+        function myFunction() {
+            if(j$('.pbBody').find('.brandTertiaryBrd:eq(3)').find('h3').text() =='Member Reps:'){
+                if(titleName != null)
+                {
+                    j$('.pbBody').find('.brandTertiaryBrd:eq(3)').find('h3').text(titleName);
+                }
+            }
+        }
+    </script>
+</apex:page>

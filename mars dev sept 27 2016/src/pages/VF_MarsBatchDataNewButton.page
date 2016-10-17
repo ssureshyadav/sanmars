@@ -1,0 +1,5 @@
+<apex:page standardController="MARSBatchDataStore__c" Title="Error Page">
+  <!-- Begin Default Content REMOVE THIS -->
+  <h1>This functionality is not available.</h1>
+  <!-- End Default Content REMOVE THIS -->
+</apex:page>

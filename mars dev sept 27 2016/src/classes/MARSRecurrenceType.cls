@@ -1,0 +1,1 @@
+public enum MARSRecurrenceType {RecursDaily,RecursEveryWeekday,RecursMonthly,RecursMonthlyNth,RecursWeekly,RecursYearly,RecursYearlyNth}

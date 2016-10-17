@@ -1,0 +1,5 @@
+<apex:page controller="MARSConfigController">
+    <div id="contentToToggle1" style="display">
+        <c:cp_MarsConfiguration />
+    </div>
+</apex:page>

@@ -1,0 +1,3 @@
+<apex:page standardController="Contact">
+    <c:MarsRepInfo contact="{!contact}"/>
+</apex:page>

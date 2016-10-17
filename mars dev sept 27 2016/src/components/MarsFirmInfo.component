@@ -1,0 +1,83 @@
+<apex:component controller="MarsFirmInfoController">
+    <apex:attribute id="firmsum" name="MARSFirmSummary__c" type="MARSFirmSummary__c" description="firm Summary" required="true"/>
+     <apex:pageBlock >
+        <apex:pageBlockSection columns="2">
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Firm Type"></apex:outputLabel>
+                <apex:outputText value="{!firmtypeValue}" />
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Last Firm Note Date"></apex:outputLabel>
+                <apex:outputtext value="{0,date,MM/dd/yyyy}" > 
+                    <apex:param value="{!MARSFirmSummary__c.MarsLastFirmNoteDt__c}"/>
+                </apex:outputtext>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="YTD Purchases"></apex:outputLabel>
+                <apex:pageblockSectionItem >
+                    <apex:outputText value="{0, number,###,###,###,##0}" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true &&MARSFirmSummary__c.MarsYtdPurch__c <> null &&MARSFirmSummary__c.MarsYtdPurch__c >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false), True, False)}">
+                        <apex:param value="{!MARSFirmSummary__c.MarsYtdPurch__c}"/>
+                    </apex:outputtext>
+                    <apex:outputText value="({0, number,###,###,###,##0})" style="color:red;" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true &&MARSFirmSummary__c.MarsYtdPurch__c <> null &&MARSFirmSummary__c.MarsYtdPurch__c < 0), True, False)}">
+                        <apex:param value="{!MARSFirmSummary__c.MarsYtdPurch__c*-1}"/>
+                    </apex:outputtext>
+                </apex:pageblockSectionItem>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="YTD Redemptions"></apex:outputLabel>
+                <apex:pageblockSectionItem >
+                    <apex:outputText value="{0, number,###,###,###,##0}" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true &&MARSFirmSummary__c.MarsYtdRed__c <> null &&MARSFirmSummary__c.MarsYtdRed__c >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false), True, False)}">
+                        <apex:param value="{!MARSFirmSummary__c.MarsYtdRed__c}"/>
+                    </apex:outputtext>
+                    <apex:outputText value="({0, number,###,###,###,##0})" style="color:red;" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true &&MARSFirmSummary__c.MarsYtdRed__c <> null &&MARSFirmSummary__c.MarsYtdRed__c < 0), True, False)}">
+                        <apex:param value="{!MARSFirmSummary__c.MarsYtdRed__c*-1}"/>
+                    </apex:outputtext>
+                </apex:pageblockSectionItem>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Net"></apex:outputLabel>
+                <apex:pageblockSectionItem >
+                    <apex:outputText value="{0, number,###,###,###,##0}" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && MARSFirmSummary__c.MarsYtdNet__c <> null && MARSFirmSummary__c.MarsYtdNet__c >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false), True, False)}">
+                        <apex:param value="{!MARSFirmSummary__c.MarsYtdNet__c}"/>
+                    </apex:outputtext>
+                    <apex:outputText value="({0, number,###,###,###,##0})" style="color:red;" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && MARSFirmSummary__c.MarsYtdNet__c <> null && MARSFirmSummary__c.MarsYtdNet__c < 0), True, False)}">
+                        <apex:param value="{!(MARSFirmSummary__c.MarsYtdNet__c)*-1}"/>
+                    </apex:outputtext>
+                </apex:pageblockSectionItem>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Current Assets"></apex:outputLabel>
+                <apex:pageblockSectionItem >
+                    <apex:outputText value="{0, number,###,###,###,##0}" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true &&MARSFirmSummary__c.MarsCAssets__c <> null &&MARSFirmSummary__c.MarsCAssets__c >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false), True, False)}">
+                        <apex:param value="{!MARSFirmSummary__c.MarsCAssets__c}"/>
+                    </apex:outputtext>
+                    <apex:outputText value="({0, number,###,###,###,##0})" style="color:red;" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && MARSFirmSummary__c.MarsCAssets__c <> null &&MARSFirmSummary__c.MarsCAssets__c < 0), True, False)}">
+                        <apex:param value="{!MARSFirmSummary__c.MarsCAssets__c*-1}"/>
+                    </apex:outputtext>
+                </apex:pageblockSectionItem>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Prior Year Assets"></apex:outputLabel>
+                <apex:pageblockSectionItem >
+                    <apex:outputText value="{0, number,###,###,###,##0}" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true &&MARSFirmSummary__c.MarsPyearAssets__c <> null &&MARSFirmSummary__c.MarsPyearAssets__c >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false), True, False)}">
+                        <apex:param value="{!MARSFirmSummary__c.MarsPyearAssets__c}"/>
+                    </apex:outputtext>
+                    <apex:outputText value="({0, number,###,###,###,##0})" style="color:red;" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && MARSFirmSummary__c.MarsPyearAssets__c <> null &&MARSFirmSummary__c.MarsPyearAssets__c < 0), True, False)}">
+                        <apex:param value="{!MARSFirmSummary__c.MarsPyearAssets__c*-1}"/>
+                    </apex:outputtext>
+                </apex:pageblockSectionItem>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Prior Month Assets"></apex:outputLabel>
+                <apex:pageblockSectionItem >
+                    <apex:outputText value="{0, number,###,###,###,##0}" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true &&MARSFirmSummary__c.MarsPmonthAssets__c <> null &&MARSFirmSummary__c.MarsPmonthAssets__c >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false), True, False)}">
+                        <apex:param value="{!MARSFirmSummary__c.MarsPmonthAssets__c}"/>
+                    </apex:outputtext>
+                    <apex:outputText value="({0, number,###,###,###,##0})" style="color:red;" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && MARSFirmSummary__c.MarsPmonthAssets__c <> null &&MARSFirmSummary__c.MarsPmonthAssets__c < 0), True, False)}">
+                        <apex:param value="{!MARSFirmSummary__c.MarsPmonthAssets__c*-1}"/>
+                    </apex:outputtext>
+                </apex:pageblockSectionItem>
+            </apex:pageBlockSectionItem>
+            </apex:pageblockSection>
+    </apex:pageBlock>
+</apex:component>

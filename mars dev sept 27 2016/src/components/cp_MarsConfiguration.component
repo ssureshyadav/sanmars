@@ -1,0 +1,120 @@
+<apex:component controller="MARSConfigController" allowDML="true">
+    <apex:form >
+      <apex:pagemessages ></apex:pagemessages>
+        <apex:pageblock rendered="{!(!showContent)}">
+            <apex:outputText value="Please enter log in credentials if MARS Admin else click on Continue..." style="color:blue;font-weight:bold"/><br/><br/>
+                <apex:outputText value="Password  "/>
+                <apex:inputSecret value="{!configPswd}"/>
+            <apex:outputText value="  "/>
+            <apex:commandButton value="Continue" action="{!doAction}"/>
+        </apex:pageblock>
+
+        <apex:pageBlock rendered="{!showContent}">
+            <apex:pageBlockButtons lang="top">
+                <apex:commandButton value="Edit" action="{!edit}" rendered="{!!displayEdit}"/>
+                <apex:commandButton value="Save" action="{!save}" rendered="{!displayEdit}"/>
+                <apex:commandButton value="Cancel" action="{!cancel}" immediate="true" rendered="{!displayEdit}"/>
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection > 
+                <apex:pageBlockSectionItem rendered="{!hasAccess}">
+                    <apex:outputText value="MARS Integration User"/>
+                    <apex:pageBlockSectionItem helpText="MARS User ID}">
+                        <apex:inputField value="{!defaults.MARSUser__c}" rendered="{!displayEdit}" style="text-transform:uppercase;"/> 
+                        <apex:outputText value="{!defaults.MARSUser__c}" rendered="{!(!displayEdit)}"/>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem rendered="{!hasAccess}">
+                <apex:outputText value="MARS Password"/>
+                    <apex:pageBlockSectionItem >
+                        <apex:inputSecret rendered="{!displayEdit}" redisplay="true" value="{!defaults.MARSPassword__c}"/>
+                        <apex:outputText value="{!MARSPassword}" rendered="{!(!displayEdit)}"/>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem rendered="{!hasAccess}">
+                    <apex:outputText value="MARS Endpoint URL"/>
+                    <apex:pageblockSectionItem >
+                        <apex:inputField value="{!defaults.MARSEndpointUrl__c}" rendered="{!displayEdit}"/>
+                        <apex:outputText value="{!defaults.MARSEndpointUrl__c}" rendered="{!(!displayEdit)}"/>
+                    </apex:pageblockSectionItem>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem rendered="{!hasAccess}">
+                    <apex:outputText value="Integration Type"/>
+                    <apex:pageBlockSectionItem >
+                        <apex:inputField value="{!defaults.IntegrationType__c}" rendered="{!displayEdit}"/>
+                        <apex:outputText value="{!defaults.IntegrationType__c}" rendered="{!(!displayEdit)}"/> 
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputText value="Email Errors"/>
+                    <apex:pageBlockSectionItem >
+                        <apex:inputField value="{!defaults.EmailErrors__c}" rendered="{!displayEdit}"/>                        
+                        <apex:outputText value="{!defaults.EmailErrors__c}" rendered="{!(!displayEdit)}"/> 
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputText value="Email"/>
+                    <apex:pageblockSectionItem >
+                        <apex:inputField value="{!defaults.Email__c}" rendered="{!displayEdit}"/>
+                        <apex:outputText value="{!defaults.Email__c}" rendered="{!(!displayEdit)}"/>
+                    </apex:pageblockSectionItem>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputText value="Retry Failed Messages (in Minutes)"/>
+                    <apex:pageblockSectionItem >
+                        <apex:inputField value="{!defaults.RetryDuration__c}" rendered="{!displayEdit}"/>
+                        <apex:outputText value="{!defaults.RetryDuration__c}" rendered="{!(!displayEdit)}"/> 
+                    </apex:pageblockSectionItem>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputText value="Delete Failed Messages (in Days)"/>
+                    <apex:pageBlockSectionItem >
+                        <apex:inputField value="{!defaults.DeleteMARSBatchDataPeriod__c}" rendered="{!displayEdit}"/>
+                        <apex:outputText value="{!defaults.DeleteMARSBatchDataPeriod__c}" rendered="{!(!displayEdit)}"/> 
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputText value="Bulk Load Enabled"/>
+                    <apex:pageBlockSectionItem >
+                        <apex:inputField value="{!defaults.BulkLoadEnabled__c}" rendered="{!displayEdit}"/>
+                        <apex:outputText value="{!defaults.BulkLoadEnabled__c}" rendered="{!(!displayEdit)}"/> 
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputText value="Custom Amount Format"/>
+                    <apex:pageBlockSectionItem >
+                        <apex:inputField value="{!defaults.CustomAmountFormat__c}" rendered="{!displayEdit}"/>
+                        <apex:outputText value="{!defaults.CustomAmountFormat__c}" rendered="{!(!displayEdit)}"/> 
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputText value="Allow Rep Move"/>
+                    <apex:pageBlockSectionItem >
+                        <apex:inputField value="{!defaults.AllowRepMove__c}" rendered="{!displayEdit}"/>
+                        <apex:outputText value="{!defaults.AllowRepMove__c}" rendered="{!(!displayEdit)}"/> 
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputText value="Retain SFDC Account Name"/>
+                    <apex:pageBlockSectionItem >
+                        <apex:inputField value="{!defaults.RetainSFDCAccountName__c}" rendered="{!displayEdit}"/>
+                        <apex:outputText value="{!defaults.RetainSFDCAccountName__c}" rendered="{!(!displayEdit)}"/> 
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem rendered="{!hasAccess}">
+                    <apex:outputText value="MARS Office Naming Method"/>
+                    <apex:pageblockSectionItem >
+                        <apex:inputField value="{!defaults.MARSOfficeNamingMethod__c}" rendered="{!displayEdit}"/>
+                        <apex:outputText value="{!defaults.MARSOfficeNamingMethod__c}" rendered="{!(!displayEdit)}"/> 
+                    </apex:pageblockSectionItem>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem rendered="{!hasAccess}">
+                    <apex:outputText value="Custom Contact Address"/>
+                    <apex:pageblockSectionItem >
+                        <apex:inputField value="{!defaults.CustomContactAddress__c}" rendered="{!displayEdit}"/>
+                        <apex:outputText value="{!defaults.CustomContactAddress__c}" rendered="{!(!displayEdit)}"/> 
+                    </apex:pageblockSectionItem>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+</apex:component>

@@ -1,0 +1,107 @@
+<apex:component controller="MarsRepController">
+    <apex:attribute id="contactinfo" name="contact" type="Contact" required="true" description="contact Id"/>
+    <apex:pageBlock >
+        <apex:pageBlockSection columns="2">
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Firm Name"></apex:outputLabel>
+                <apex:outputLink value="/{!IF((contact.SFDCFirmSumId__c != null),contact.SFDCFirmSumId__c,contact.AccountId)}"
+                    target="_top">
+                    {!IF((contact.account.ParentId != null),contact.account.Parent.MarsFirmNm__c,contact.Account.MarsFirmNm__c)}
+                    <!--{!contact.account.MarsFirmNm__c} -->
+                </apex:outputLink>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Firm Type"></apex:outputLabel>
+                <apex:outputText value="{!firmtypeValue}" />
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="First Sale Date"></apex:outputLabel>
+                <apex:outputField value="{!contact.MarsFirstSaleDt__c}" />
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Last Sale Date"></apex:outputLabel>
+                <apex:outputField value="{!contact.MarsLastSaleDt__c}" />
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Rep Type"></apex:outputLabel>
+                <apex:outputText value="{!reptypeValue}" />
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Territory" />
+                <apex:repeat value="{!territoryValue}" var="terrkey">
+                    <apex:outputLink value="{!URLFOR($Action.MarsTerritory__c.View, terrkey)}"
+                        target="_top">
+                        <apex:outputText value="{!territoryValue[terrkey]}" />
+                        <br />
+                    </apex:outputLink>
+                </apex:repeat>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="YTD Purchases"></apex:outputLabel>
+                <apex:pageblockSectionItem >
+                    <apex:outputText value="{0, number,###,###,###,##0}" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && contact.MarsYtdPurch__c <> null &&contact.MarsYtdPurch__c >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false), True, False)}">
+                        <apex:param value="{!contact.MarsYtdPurch__c}"/>
+                    </apex:outputtext>
+                    <apex:outputText value="({0, number,###,###,###,##0})" style="color:red;" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true &&contact.MarsYtdPurch__c <> null &&contact.MarsYtdPurch__c < 0), True, False)}">
+                        <apex:param value="{!contact.MarsYtdPurch__c*-1}"/>
+                    </apex:outputtext>
+                </apex:pageblockSectionItem>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="YTD Redemptions"></apex:outputLabel>
+                <apex:pageblockSectionItem >
+                    <apex:outputText value="{0, number,###,###,###,##0}" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && contact.MarsYtdRed__c != null &&contact.MarsYtdRed__c >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false), True, False)}">
+                        <apex:param value="{!contact.MarsYtdRed__c}"/>
+                    </apex:outputtext>
+                    <apex:outputText value="({0, number,###,###,###,##0})" style="color:red;" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && contact.MarsYtdRed__c != null &&contact.MarsYtdRed__c < 0), True, False)}">
+                        <apex:param value="{!contact.MarsYtdRed__c*-1}"/>
+                    </apex:outputtext>
+                </apex:pageblockSectionItem>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Net"></apex:outputLabel>
+                <apex:pageblockSectionItem >
+                    <apex:outputText value="{0, number,###,###,###,##0}" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && contact.MarsYtdNet__c <> null && contact.MarsYtdNet__c >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false), True, False)}">
+                        <apex:param value="{!contact.MarsYtdNet__c}"/>
+                    </apex:outputtext>
+                    <apex:outputText value="({0, number,###,###,###,##0})" style="color:red;" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && contact.MarsYtdNet__c <> null && contact.MarsYtdNet__c < 0), True, False)}">
+                        <apex:param value="{!(contact.MarsYtdNet__c)*-1}"/>
+                    </apex:outputtext>
+                </apex:pageblockSectionItem>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Current Assets"></apex:outputLabel>
+                <apex:pageblockSectionItem >
+                    <apex:outputText value="{0, number,###,###,###,##0}" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && contact.MarsCAssets__c <> null && contact.MarsCAssets__c >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false), True, False)}">
+                        <apex:param value="{!contact.MarsCAssets__c}"/>
+                    </apex:outputtext>
+                    <apex:outputText value="({0, number,###,###,###,##0})" style="color:red;" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && contact.MarsCAssets__c <> null && contact.MarsCAssets__c < 0), True, False)}">
+                        <apex:param value="{!contact.MarsCAssets__c*-1}"/>
+                    </apex:outputtext>
+                </apex:pageblockSectionItem>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Prior Year Assets"></apex:outputLabel>
+                <apex:pageblockSectionItem >
+                    <apex:outputText value="{0, number,###,###,###,##0}" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && contact.MarsPyearAssets__c <> null && contact.MarsPyearAssets__c >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false), True, False)}">
+                        <apex:param value="{!contact.MarsPyearAssets__c}"/>
+                    </apex:outputtext>
+                    <apex:outputText value="({0, number,###,###,###,##0})" style="color:red;" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && contact.MarsPyearAssets__c <> null && contact.MarsPyearAssets__c < 0), True, False)}">
+                        <apex:param value="{!contact.MarsPyearAssets__c*-1}"/>
+                    </apex:outputtext>
+                </apex:pageblockSectionItem>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Prior Month Assets"></apex:outputLabel>
+                <apex:pageblockSectionItem >
+                    <apex:outputText value="{0, number,###,###,###,##0}" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && contact.MarsPmonthAssets__c <> null && contact.MarsPmonthAssets__c >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false), True, False)}">
+                        <apex:param value="{!contact.MarsPmonthAssets__c}"/>
+                    </apex:outputtext>
+                    <apex:outputText value="({0, number,###,###,###,##0})" style="color:red;" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && contact.MarsPmonthAssets__c <> null && contact.MarsPmonthAssets__c < 0), True, False)}">
+                        <apex:param value="{!contact.MarsPmonthAssets__c*-1}"/>
+                    </apex:outputtext>
+                </apex:pageblockSectionItem>
+            </apex:pageBlockSectionItem>  
+            </apex:pageblockSection>
+    </apex:pageBlock>
+</apex:component>

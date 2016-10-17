@@ -1,0 +1,16 @@
+<apex:page standardController="MARSFirmSummary__c">
+    <apex:detail subject="{!MARSFirmSummary__c.Id}" relatedList="true"/>
+    <!-- <apex:outputPanel rendered="{!IF((Account.RecordType.Name == 'MARS'),true,false)}">
+    <c:MarsOfficeFundSummary AccountInfo="{!Account}" />
+    </apex:outputPanel> -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script>
+        var j$ = jQuery.noConflict();
+        j$("iframe").each(function(){
+            j$(this).load(function() {
+                j$(this).height( j$(this).contents().find("body").height() );
+            });
+        });
+    </script>
+    
+</apex:page>

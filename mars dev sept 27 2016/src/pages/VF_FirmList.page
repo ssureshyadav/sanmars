@@ -1,0 +1,168 @@
+<!--
+ Last Modified Details
+    Date        User        Purpose
+    --------------------------------------------------------------
+    12/3/2013    Suresh     BUG73349
+    12/10/2013   Suresh     BUG73689
+    12/23/2013   Suresh     BUG73672
+    12/23/2013   Suresh     BUG73949
+    --------------------------------------------------------------
+
+-->
+
+
+<apex:page Controller="MarsFirmController" tabStyle="MARSFirmSummary__c" action="{!sidebardropdown}" showHeader="true" title="Firm: Home" cache="true">
+<head>
+<title>Firm Page</title>
+</head>
+<style>
+    body .bRelatedList .pbTitle h3, body .bPageBlock .pbTitle h2, body .bPageBlock .pbTitle h3, body .bSubBlock h3.lbHeader
+    {
+    font-size:1.5em;
+    }
+</style>
+
+
+ <apex:form id="form">
+    <apex:sectionHeader title="Firm" subtitle="Home" help="https://help.salesforce.com/htviewhelpdoc?id=account_overview.htm&siteLang=en_US" />
+    <br/>
+        <div>
+            <apex:outputLabel value="View:" style="Bold" />
+           <!-- <apex:actionfunction name="fun" action="{!processview}"/> -->
+            <apex:actionfunction name="funview" action="{!redirect}"/> 
+          
+            <apex:selectlist value="{!selectedpicklistvalue}" multiselect="false" size="1" onchange="funview();" >
+                <apex:selectOptions value="{!views}"/>
+            </apex:selectlist>
+            <apex:commandButton value="Go!" action="{!redirect}" style=" height: 2em;"/>
+          
+        <div style="float:right;">
+            <apex:outputLabel value="Search:" />
+            <apex:inputText value="{!query}" onkeypress="return handleKeyPress(event);"/>
+            <apex:commandButton value="Search" action="{!runQuery}" id="searchButton" style=" height: 2em;"/> 
+        </div> 
+        
+        <script> var sbutton = document.getElementById("{!$Component.searchButton}"); </script>
+        <script type="text/javascript">
+            function handleKeyPress(e){
+            var key= 0;
+            if(window.event){
+                key= e.keyCode;
+                }else if(e.which){
+                key= e.which;
+            }
+            if(key==13){
+                sbutton.click();
+                return false;
+                }
+            }
+        </script>
+        
+         <!-- <apex:commandButton value="Go!" reRender="theForm">
+             <apex:actionSupport event="onclick" action="{!processview}" />
+         </apex:commandButton> --></div>
+        <apex:pageBlock id="block" mode="edit" title="Recent Firm" >
+     
+            <apex:pageBlockButtons location="top">
+                <apex:commandButton value="New" action="{!newaction}" rendered="{!$ObjectType.MARSFirmSummary__c.createable}"/>
+                <div style="float:right;">
+          
+                    <script>
+                         window.onload=function()       
+                        {             
+                                var dropdown =document.getElementById("{!$Component.listvalue}").value;
+                                 if(localStorage.getItem("dpvalue") != null){
+                                    document.getElementById("{!$Component.listvalue}").value=localStorage.getItem("dpvalue");
+                                }
+                               
+                                 if(localStorage.getItem("noofrecords") != null){                             
+                                     document.getElementById("{!$Component.firmrecords}").value='25';
+                                 }
+                                /* if(dropdown != localStorage.getItem("dpvalue")){
+                                     // This function will call apex action function 
+                                     fun();
+                                 }*/
+                        };
+                        function dropdown(){
+                                    var sel=document.getElementById("{!$Component.listvalue}").value;
+                                    localStorage.setItem("dpvalue", sel);
+                        }
+                        function itemsview(){
+                            localStorage.setItem("noofrecords", {!officerecordsvalue});
+                        }
+                        </script>
+               <apex:inputHidden id="firmrecords" value="{!officerecordsvalue}"/>
+                <apex:actionFunction name="fun" action="{!sidebardropdown}" id="dropdown"/>
+                    <div id="recently" style="display:{!if(showContent,"block","none")};">
+                        <apex:selectlist value="{!selecteddropdown}" onchange="fun();dropdown();" multiselect="false" size="1" id="listvalue">
+                        <apex:selectOptions value="{!sideviews}"/>
+                        </apex:selectlist>
+                    </div> 
+                </div>
+            </apex:pageBlockButtons>
+            
+            <apex:actionStatus id="stat">
+                <apex:facet name="start"> 
+                    <apex:outputPanel layout="block" styleClass="message infoM4">
+                    <apex:panelGrid columns="2" styleClass="messageTable" columnClasses="messageCell" style="padding:0px;margin:0px;">
+                    <apex:panelGroup >
+                        <apex:image value="/img/loading.gif" title="Processing..." />
+                    </apex:panelGroup>
+                    <!-- <apex:panelGroup >
+                    <div class="messageText">Please wait...</div>
+                    </apex:panelGroup> -->
+                    </apex:panelGrid>
+                    
+                    </apex:outputPanel>
+                </apex:facet>
+
+                <apex:facet name="stop">
+                    <apex:pageBlockTable value="{!CurrentFirmList}" var="a">
+                        <apex:column headerValue="Firm Name">
+                            <apex:outputLink value="/{!a.Id}">{!a.SfdcFirmId__r.MarsFirmNm__c}</apex:outputLink>
+                        </apex:column>
+                        <apex:column value="{!a.SfdcFirmId__r.BillingCity}"/> 
+                        <apex:column value="{!a.SfdcFirmId__r.BillingState}"/>
+                  <!--      <apex:column value="{!a.MarsYtdPurch__c}"/>
+                        <apex:column value="{!a.MarsYtdRed__c}"/>
+                        <apex:column value="{!a.MarsCAssets__c}"/> -->
+                        <apex:column >
+                            <apex:facet name="header" >
+                                <apex:outputPanel style="float:right;">YTD Purchases</apex:outputPanel>
+                            </apex:facet>
+                            <apex:outputText value="{0, number,###,###,###,##0}" style="float:right;">
+                                <apex:param value="{!a.MarsYtdPurch__c}"/>
+                            </apex:outputText>
+                        </apex:column>
+                        <apex:column >
+                            <apex:facet name="header" >
+                                <apex:outputPanel style="float:right;">YTD Redemptions</apex:outputPanel>
+                            </apex:facet>
+                            <apex:outputText value="{0, number,###,###,###,##0}" style="float:right;">
+                                <apex:param value="{!a.MarsYtdRed__c}"/>
+                            </apex:outputText>
+                        </apex:column>
+                        <apex:column >
+                            <apex:facet name="header" >
+                                <apex:outputPanel style="float:right;">Current Assets</apex:outputPanel>
+                            </apex:facet>
+                            <apex:outputText value="{0, number,###,###,###,##0}" style="float:right;">
+                                <apex:param value="{!a.MarsCAssets__c}"/>
+                            </apex:outputText>
+                        </apex:column>
+                    </apex:pageBlockTable>                    
+                </apex:facet>
+                
+            </apex:actionStatus>
+               <apex:outputText value="No records to display" escape="false" rendered="{!(CurrentFirmList.size == 0)}"/>
+               <div style="display:{!IF(CurrentFirmList.size == 0,'none','block')}">
+                   <apex:outputLink rendered="{!(officerecordsvalue  == 25)}" onclick="itemsview();">Show 10 Items
+                        <apex:param name="contIdParam" value="10" assignTo="{!officerecordsvalue}" id="tenitems"/> 
+                    </apex:outputLink> 
+                    <apex:outputLink rendered="{!(officerecordsvalue  == 10)}" onclick="itemsview();">Show 25 Items
+                        <apex:param name="contIdParam" value="25" assignTo="{!officerecordsvalue}" id="moreitems"/>  
+                    </apex:outputLink>  
+                </div>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

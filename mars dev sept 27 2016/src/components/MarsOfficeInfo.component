@@ -1,0 +1,100 @@
+<apex:component controller="MarsOfficeController">
+    <apex:attribute name="account" id="acc" type="Account" required="true" description="Office"/>
+   <apex:pageBlock >
+        <apex:pageBlockSection columns="2">
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Firm Name"></apex:outputLabel>
+                <!-- <apex:outputLink value="/apex/VF_firmdetail?id={!account.ParentId}" -->
+                <apex:outputLink value="/{!IF((account.SFDCFirmSumId__c != null),account.SFDCFirmSumId__c,account.Id)}"
+                    target="_top">
+                    {!IF((account.ParentId != null),account.Parent.MarsFirmNm__c, account.MarsFirmNm__c)}
+                </apex:outputLink>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Firm Type"></apex:outputLabel>
+                <apex:outputText value="{!firmtypeValue}" />
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Last Sale Date"></apex:outputLabel>
+                <apex:outputField value="{!account.MarsLastSaleDt__c}" />
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Territory" />
+                <apex:repeat value="{!territoryValue}" var="terrkey">
+                    <apex:outputLink value="{!URLFOR($Action.MarsTerritory__c.View, terrkey)}"
+                        target="_top">
+                        <apex:outputText value="{!territoryValue[terrkey]}" />
+                        <br />
+                    </apex:outputLink>
+                </apex:repeat>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="YTD Purchases"></apex:outputLabel>
+                <apex:pageblockSectionItem >
+                    <apex:outputText value="{0, number,###,###,###,##0}" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true &&account.MarsYtdPurch__c <> null &&account.MarsYtdPurch__c >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false), True, False)}">
+                        <apex:param value="{!account.MarsYtdPurch__c}"/>
+                    </apex:outputtext>
+                    <apex:outputText value="({0, number,###,###,###,##0})" style="color:red;" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true &&account.MarsYtdPurch__c <> null &&account.MarsYtdPurch__c < 0), True, False)}">
+                        <apex:param value="{!account.MarsYtdPurch__c*-1}"/>
+                    </apex:outputtext>
+                </apex:pageblockSectionItem>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="YTD Redemptions"></apex:outputLabel>
+                <apex:pageblockSectionItem >
+                    <apex:outputText value="{0, number,###,###,###,##0}" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true &&account.MarsYtdRed__c <> null &&account.MarsYtdRed__c >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false), True, False)}">
+                        <apex:param value="{!account.MarsYtdRed__c}"/>
+                    </apex:outputtext>
+                    <apex:outputText value="({0, number,###,###,###,##0})" style="color:red;" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true &&account.MarsYtdRed__c <> null &&account.MarsYtdRed__c < 0), True, False)}">
+                        <apex:param value="{!account.MarsYtdRed__c*-1}"/>
+                    </apex:outputtext>
+                </apex:pageblockSectionItem>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Net"></apex:outputLabel>
+                <apex:pageblockSectionItem >
+                    <apex:outputText value="{0, number,###,###,###,##0}" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && account.MarsYtdNet__c <> null && account.MarsYtdNet__c >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false), True, False)}">
+                        <apex:param value="{!account.MarsYtdNet__c}"/>
+                    </apex:outputtext>
+                    <apex:outputText value="({0, number,###,###,###,##0})" style="color:red;" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && account.MarsYtdNet__c <> null && account.MarsYtdNet__c < 0), True, False)}">
+                        <apex:param value="{!(account.MarsYtdNet__c)*-1}"/>
+                    </apex:outputtext>
+                </apex:pageblockSectionItem>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Current Assets"></apex:outputLabel>
+                <apex:pageblockSectionItem >
+                    <apex:outputText value="{0, number,###,###,###,##0}" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true &&account.MarsCAssets__c <> null &&account.MarsCAssets__c >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false), True, False)}">
+                        <apex:param value="{!account.MarsCAssets__c}"/>
+                    </apex:outputtext>
+                    <apex:outputText value="({0, number,###,###,###,##0})" style="color:red;" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && account.MarsCAssets__c <> null &&account.MarsCAssets__c < 0), True, False)}">
+                        <apex:param value="{!account.MarsCAssets__c*-1}"/>
+                    </apex:outputtext>
+                </apex:pageblockSectionItem>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Prior Year Assets"></apex:outputLabel>
+                <apex:pageblockSectionItem >
+                    <apex:outputText value="{0, number,###,###,###,##0}" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true &&account.MarsPyearAssets__c <> null &&account.MarsPyearAssets__c >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false), True, False)}">
+                        <apex:param value="{!account.MarsPyearAssets__c}"/>
+                    </apex:outputtext>
+                    <apex:outputText value="({0, number,###,###,###,##0})" style="color:red;" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && account.MarsPyearAssets__c <> null &&account.MarsPyearAssets__c < 0), True, False)}">
+                        <apex:param value="{!account.MarsPyearAssets__c*-1}"/>
+                    </apex:outputtext>
+                </apex:pageblockSectionItem>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Prior Month Assets"></apex:outputLabel>
+                <apex:pageblockSectionItem >
+                    <apex:outputText value="{0, number,###,###,###,##0}" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true &&account.MarsPmonthAssets__c <> null &&account.MarsPmonthAssets__c >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false), True, False)}">
+                        <apex:param value="{!account.MarsPmonthAssets__c}"/>
+                    </apex:outputtext>
+                    <apex:outputText value="({0, number,###,###,###,##0})" style="color:red;" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && account.MarsPmonthAssets__c <> null &&account.MarsPmonthAssets__c < 0), True, False)}">
+                        <apex:param value="{!account.MarsPmonthAssets__c*-1}"/>
+                    </apex:outputtext>
+                </apex:pageblockSectionItem>
+            </apex:pageBlockSectionItem>
+            
+            </apex:pageblockSection>
+    </apex:pageBlock>
+</apex:component>

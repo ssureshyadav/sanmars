@@ -1,0 +1,164 @@
+<!--
+ Last Modified Details
+    Date        User        Purpose
+    --------------------------------------------------------------
+    12/03/2013    Suresh     BUG73661
+    12/24/2013    Suresh     BUG73661
+    --------------------------------------------------------------
+
+-->
+
+<apex:page standardController="Account" extensions="MarsFirmController" title="Search Results" tabStyle="firm__tab" action="{!searchvalue}">
+    <apex:sectionHeader title="Search Results" />
+    <apex:form >
+        <apex:outputText value="{!msg}" style="color:#c00;"></apex:outputText>
+        <div>
+            <apex:panelGrid columns="5">
+                <apex:outputLabel value="Search"/>
+                <apex:inputText value="{!query}" onkeypress="return handleKeyPress(event);"/>
+                <apex:commandButton value="Search" action="{!runquery}" id="searchfirmButton" style=" height: 2em;"/>
+                <apex:inputCheckbox selected="{!ownedbyme}" value="{!ownedbyme}" style="margin-top: .5em;" id="checkbox"/>          
+                <apex:outputText value="Limit to items I own" style="DISPLAY: inline-block;PADDING-TOP: 5px"/>
+            </apex:panelGrid>
+        </div> 
+        
+        <script> var sbutton = document.getElementById("{!$Component.searchfirmButton}"); </script>
+        <script type="text/javascript">
+            function handleKeyPress(e){
+            var key= 0;
+            if(window.event){
+                key= e.keyCode;
+                }else if(e.which){
+                key= e.which;
+            }
+            if(key==13){
+                sbutton.click();
+                return false;
+                }
+            }
+        </script>
+        <style>
+            .EditButtonClass
+        {
+            color:#015ba7 !important;
+            text-decoration: none;
+        }
+        .EditButtonClass:Hover
+        {
+            text-decoration: underline;
+        }
+        </style>
+        
+        <apex:pageBlock id="block" title="Firms[{!standardsetcon.ResultSize}]">
+            <apex:panelGrid columns="6" style="display:{!if(standardsetcon.hasNext || standardsetcon.PageNumber <> 1 ,'block','none')};">
+                <apex:outputText value="" style="padding-right:30em;" />
+                <!-- <img src="/img/search_prevarrow.gif" alt="Previous Page" width="5" height="8" title="Previous Page"/> -->
+            
+                <apex:outputText value="Previous Page" rendered="{!!standardsetcon.hasPrevious}" style="color:gray;font-size:.95em;"></apex:outputText>
+                <apex:commandLink rendered="{!if(standardsetcon != null && standardsetcon.ResultSize>25 && standardsetcon.hasPrevious, True, False)}" 
+                    value="Previous Page" action="{!standardsetcon.previous}" 
+                    rerender="block" status="stat" style="font-size:.95em;" styleClass="pShowLess"/>
+                    <apex:outputPanel rendered="{!IF(standardsetcon.PageSize == null,false,true)}">
+                     <apex:outputText value="({!((standardsetcon.PageSize*(standardsetcon.PageNumber-1))+1)}-{!if((standardsetcon.PageSize*standardsetcon.PageNumber) >standardsetcon.ResultSize,standardsetcon.ResultSize,standardsetcon.PageSize*standardsetcon.PageNumber)})" style="{!if(standardsetcon.hasNext || standardsetcon.hasPrevious,'','display:none;')}"></apex:outputText>
+                   </apex:outputPanel>
+                <apex:commandlink rendered="{!if(standardsetcon != null && standardsetcon.ResultSize>25 && standardsetcon.hasNext, True, False)}"
+                    value="Next Page" action="{!standardsetcon.next}" rerender="block"
+                    status="stat" style="font-size:.95em;"/>
+                    <apex:outputText value="Next Page" rendered="{!!standardsetcon.hasNext}" style="color:gray;font-size:.95em;"></apex:outputText>
+            </apex:panelGrid>
+            <apex:actionStatus id="stat">
+                <apex:facet name="start">
+                    <apex:outputPanel layout="block" style=" position: relative;left:40%;padding-top:10%;padding-bottom:35%;"  >
+                        <apex:panelGrid columns="1">
+                            <apex:panelGroup >
+                                <apex:image value="/img/loading.gif" title="Processing..."
+                                    style="vertical-align:middle;" />
+                                <div class="messageText">Loading...</div>
+                            </apex:panelGroup>
+                        </apex:panelGrid>
+                    </apex:outputPanel>
+                </apex:facet>
+
+                <apex:facet name="stop">
+                    <apex:outputPanel styleClass="tableContainer" layout="block">
+                        <apex:pageBlockTable value="{!CurrentFirmList}" var="a" styleclass="floatingHeaderTable">
+                            <apex:column headerValue="Action">
+                                <apex:outputLink value="/{!a.Id}/e?retURL=/apex/VF_FirmList" styleClass="EditButtonClass">Edit</apex:outputLink>
+                            </apex:column>
+
+                            <apex:column headerValue="Firm Name">
+                                <apex:facet name="header">   
+                                    <apex:commandLink action="{!viewSearchData}" value="Firm Name{!IF(sortExpression=='MarsFirmNm__c',IF(sortDirection='DESC','↓','↑'),'')}">
+                                        <apex:param value="MarsFirmNm__c" name="column" assignTo="{!sortExpression}" ></apex:param>
+                                    </apex:commandLink>
+                                </apex:facet>
+                                <apex:outputLink value="/{!a.Id}?retURL=/apex/VF_FirmView" style="">{!a.SfdcFirmId__r.MarsFirmNm__c}</apex:outputLink>
+                            </apex:column>
+                    
+                            <apex:column headerValue="BillingCity" value="{!a.SfdcFirmId__r.BillingCity}"> 
+                                <apex:facet name="header">
+                                    <apex:commandLink action="{!viewSearchData}" value="BillingCity{!IF(sortExpression=='BillingCity',IF(sortDirection='DESC','↓','↑'),'')}">
+                                        <apex:param value="BillingCity" name="column" assignTo="{!sortExpression}" ></apex:param>
+                                    </apex:commandLink>
+                                </apex:facet>
+                            </apex:column>
+
+                            <apex:column headerValue="BillingState" value="{!a.SfdcFirmId__r.BillingState}"> 
+                                <apex:facet name="header">
+                                    <apex:commandLink action="{!viewSearchData}" value="BillingState{!IF(sortExpression=='BillingState',IF(sortDirection='DESC','↓','↑'),'')}">
+                                        <apex:param value="BillingState" name="column" assignTo="{!sortExpression}" ></apex:param>
+                                    </apex:commandLink>
+                                </apex:facet>
+                            </apex:column>
+                            <apex:column headerValue="YTD Purchases">
+                            <apex:facet name="header">
+                                <apex:commandLink action="{!viewSearchData}" value="YTD Purchases{!IF(sortExpression=='MarsYtdPurch__c',IF(sortDirection='DESC','↓','↑'),'')}">
+                                    <apex:param value="MarsYtdPurch__c" name="column" assignTo="{!sortExpression}" ></apex:param>
+                                </apex:commandLink>
+                            </apex:facet>                    
+                            <apex:outputText value="{0, number,###,###,###,##0}">
+                                <apex:param value="{!a.MarsYtdPurch__c}"/>
+                            </apex:outputtext>
+                        </apex:column>
+                        <apex:column headerValue="YTD Redemptions">
+                            <apex:facet name="header">
+                                <apex:commandLink action="{!viewSearchData}" value="YTD Redemptions{!IF(sortExpression=='MarsYtdRed__c',IF(sortDirection='DESC','↓','↑'),'')}">
+                                    <apex:param value="MarsYtdRed__c" name="column" assignTo="{!sortExpression}" ></apex:param>
+                                </apex:commandLink>
+                            </apex:facet>                    
+                            <apex:outputText value="{0, number,###,###,###,##0}">
+                                <apex:param value="{!a.MarsYtdRed__c}"/>
+                            </apex:outputtext>
+                        </apex:column>
+                        <apex:column headerValue="Current Assets">
+                            <apex:facet name="header">
+                                <apex:commandLink action="{!viewSearchData}" value="Current Assets{!IF(sortExpression=='MarsCAssets__c',IF(sortDirection='DESC','↓','↑'),'')}">
+                                    <apex:param value="MarsCAssets__c" name="column" assignTo="{!sortExpression}" ></apex:param>
+                                </apex:commandLink>
+                            </apex:facet>                   
+                            <apex:outputText value="{0, number,###,###,###,##0}">
+                                <apex:param value="{!a.MarsCAssets__c}"/>
+                            </apex:outputtext>
+                        </apex:column>
+                        </apex:pageBlockTable>
+                    </apex:outputPanel>
+                </apex:facet>
+            </apex:actionStatus>
+              <apex:panelGrid columns="6" style="display:{!if(standardsetcon.hasNext || standardsetcon.PageNumber <> 1 ,'block','none')};">
+                <apex:outputText value="" style="padding-right:30em;" />
+            
+                <apex:outputText value="Previous Page" rendered="{!!standardsetcon.hasPrevious}" style="color:gray;font-size:.95em;"></apex:outputText>
+                <apex:commandLink rendered="{!if(standardsetcon != null && standardsetcon.ResultSize>25 && standardsetcon.hasPrevious, True, False)}" 
+                    value="Previous Page" action="{!standardsetcon.previous}" 
+                    rerender="block" status="stat" style="font-size:.95em;" styleClass="pShowLess"/>
+                    <apex:outputPanel rendered="{!IF(standardsetcon.PageSize == null,false,true)}">
+                    <apex:outputText value="({!((standardsetcon.PageSize*(standardsetcon.PageNumber-1))+1)}-{!if((standardsetcon.PageSize*standardsetcon.PageNumber) >standardsetcon.ResultSize,standardsetcon.ResultSize,standardsetcon.PageSize*standardsetcon.PageNumber)})" style="{!if(standardsetcon.hasNext || standardsetcon.hasPrevious,'','display:none;')}"></apex:outputText>
+                   </apex:outputPanel>
+                <apex:commandlink rendered="{!if(standardsetcon != null && standardsetcon.ResultSize>25 && standardsetcon.hasNext, True, False)}"
+                    value="Next Page" action="{!standardsetcon.next}" rerender="block"
+                    status="stat" style="font-size:.95em;"/>
+                    <apex:outputText value="Next Page" rendered="{!!standardsetcon.hasNext}" style="color:gray;font-size:.95em;"></apex:outputText>
+            </apex:panelGrid>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

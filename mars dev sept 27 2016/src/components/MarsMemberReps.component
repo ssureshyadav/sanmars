@@ -1,0 +1,58 @@
+<apex:component controller="MarsRepController">
+<style type="text/css">
+ .headerRow {
+     font-size:1em!important;
+ }
+</style>
+ <div id='{!title}'>
+<!-- <img src="/s.gif" alt="Hide Section - Team Rep" class="hideListButton" name="{!title}" onclick="twistSection(this);" onkeypress="if (event.keyCode=='13')twistSection(this);" 
+style="cursor:pointer;background-image:url('/img/alohaSkin/twisty_sprite.png');width:12px;" tabindex="0" title="Hide Section - Team Rep"/> -->
+<!--h3>{!title}<span class="titleSeparatingColon">:</span></h3> -->
+</div>
+    <apex:pageBlock >
+        <apex:pageBlockSection columns="1">
+            <apex:outputText value="No member associated with this contact" rendered="{!(memberReps.size == 0) || memberReps == null}"/>
+            <apex:outputPanel id="block" rendered="{!memberReps <> null}">
+                <apex:variable var="comp" value=""/>
+                <apex:pageBlockTable value="{!memberReps}" var="mr" rendered="{!(memberReps.size != 0)}">    
+                    <apex:column headerValue="Team Name" rendered="{!if(title == 'Team Reps',true,false)}" style="font-size:1em;">
+                        <apex:outputPanel rendered="{!IF(comp=mr.SfdcTeamRepId__c,false,true)}">
+                            <apex:outputLink value="{!URLFOR($Action.Contact.View, mr.SfdcTeamRepId__c)}" target="_top" style="{'font-weight:bold'}">{!mr.SfdcTeamRepId__r.Name}</apex:outputLink>
+                        </apex:outputPanel>
+                        <apex:variable var="comp" value="{!mr.SfdcTeamRepId__c}" />
+                    </apex:column>            
+                    <apex:column headerValue="Name">
+                        <apex:outputLink value="{!URLFOR($Action.Contact.View, mr.SfdcRepId__c)}" target="_top" style="{'font-weight:bold'}">{!mr.SfdcRepId__r.Name}</apex:outputLink>
+                    </apex:column>
+                    
+                    <apex:column headerValue="Split Percent" value="{!mr.MarsSplitPercent__c}"/>
+                    
+                    <apex:column headerValue="YTD Purchases">
+                        <apex:outputText value="{0, number,###,###,###,##0}" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true &&mr.SfdcRepId__r.MarsYtdPurch__c <> null &&mr.SfdcRepId__r.MarsYtdPurch__c >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false), True, False)}">
+                            <apex:param value="{!mr.SfdcRepId__r.MarsYtdPurch__c}"/>
+                        </apex:outputtext>
+                        <apex:outputText value="({0, number,###,###,###,##0})" style="color:red;" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true &&mr.SfdcRepId__r.MarsYtdPurch__c <> null &&mr.SfdcRepId__r.MarsYtdPurch__c < 0), True, False)}">
+                            <apex:param value="{!mr.SfdcRepId__r.MarsYtdPurch__c*-1}"/>
+                        </apex:outputtext>
+                    </apex:column>
+                    <apex:column headerValue="YTD Redemptions">
+                        <apex:outputText value="{0, number,###,###,###,##0}" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true &&mr.SfdcRepId__r.MarsYtdRed__c <> null &&mr.SfdcRepId__r.MarsYtdRed__c >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false), True, False)}">
+                            <apex:param value="{!mr.SfdcRepId__r.MarsYtdRed__c}"/>
+                        </apex:outputtext>
+                        <apex:outputText value="({0, number,###,###,###,##0})" style="color:red;" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true &&mr.SfdcRepId__r.MarsYtdRed__c <> null &&mr.SfdcRepId__r.MarsYtdRed__c < 0), True, False)}">
+                            <apex:param value="{!mr.SfdcRepId__r.MarsYtdRed__c*-1}"/>
+                        </apex:outputtext>
+                    </apex:column>
+                    <apex:column headerValue="Current Assets">
+                        <apex:outputText value="{0, number,###,###,###,##0}" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && mr.SfdcRepId__r.MarsCAssets__c <> null &&mr.SfdcRepId__r.MarsCAssets__c >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false), True, False)}">
+                            <apex:param value="{!mr.SfdcRepId__r.MarsCAssets__c}"/>
+                        </apex:outputtext>
+                        <apex:outputText value="({0, number,###,###,###,##0})" style="color:red;" rendered="{!if(($Setup.MARSDefaults__c.CustomAmountFormat__c=true && mr.SfdcRepId__r.MarsCAssets__c <> null &&mr.SfdcRepId__r.MarsCAssets__c < 0), True, False)}">
+                            <apex:param value="{!mr.SfdcRepId__r.MarsCAssets__c*-1}"/>
+                        </apex:outputtext>
+                    </apex:column>
+                </apex:pageBlockTable>
+            </apex:outputPanel>
+        </apex:pageblockSection>
+    </apex:pageBlock>
+</apex:component>

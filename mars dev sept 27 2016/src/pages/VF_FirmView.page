@@ -1,0 +1,245 @@
+<!--
+    Last Modified Details
+    Date        User        Purpose
+    --------------------------------------------------------------
+    12/5/2013    Suresh     BUG73673
+    12/5/2013    Suresh     BUG73656
+    12/5/2013    Suresh     BUG73669
+    --------------------------------------------------------------
+-->
+
+<apex:page standardController="Account" extensions="MarsFirmController" tabStyle="Firm__tab" action="{!refreshList}" title="Firm" cache="true">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+    <script src="{!URLFOR($Resource.jquery_vfFloatingHeaders)}"></script>
+    <script type = "text/javascript">
+        window.onload=function()       
+        {        
+        };
+    </script>
+    <style>
+        .EditButtonClass
+        {
+            color:#015ba7 !important;
+            text-decoration: none;
+        }
+        .EditButtonClass:Hover
+        {
+            text-decoration: underline;
+        }
+        .tableContainer
+        {
+            height:415px; 
+            width: 100%;
+            overflow: auto;
+
+        }       
+        .floatingStyle 
+        { 
+            position:relative; 
+        } 
+
+        .colClass{
+            width:40%;
+        }
+
+        .bPageBlock .pbTitle
+        {
+            vertical-align: middle;
+            color: #222;
+            font-size: 91%;
+            width: 0;
+            margin: 0;
+        }
+        table td.pbTitle { display: none; }
+
+        .buttonClass {
+            width:15px;
+            height:12px;
+            vertical-align: middle;
+        }
+
+         .ul:in{text-decoration:underline}
+         .ul{color:#015ba7;text-decoration: none;font-size:91%;}
+
+        .clsCenter{
+            text-align:center;
+        }
+
+        .clsRight{
+            text-align:right;
+        }
+        
+        .centered {
+            margin: 0 auto;
+            text-align: left;
+            width: 800px;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $('.floatingHeaderTable').vfFloatingHeaders();
+    
+        });
+        function dropdown(){
+            var sel=document.getElementById("{!$Component.firmname}").value;
+            localStorage.setItem("dpvalue", sel);
+        }
+    </script>
+    
+<apex:form id="form">
+    <div>
+        <div>
+            <apex:outputLabel value="View:" style="Bold" />
+            <apex:actionfunction name="func" action="{!redirect}"/> 
+            <apex:selectlist value="{!selectedpicklistvalue}" onchange="func();" multiselect="false" size="1" >
+                <apex:selectOptions value="{!views}"/>
+            </apex:selectlist>
+            <span style="float: right;">
+                <apex:outputLabel value="Search:"/>
+                <apex:inputText value="{!query}" onkeypress="return handleKeyPress(event);"/>
+                <apex:commandButton value="Search" action="{!runQuery}" id="searchviewButton" style=" height: 2em;"/> 
+            </span>
+        </div> 
+        
+        <script> var sbutton = document.getElementById("{!$Component.searchviewButton}"); </script>
+        <script type="text/javascript">
+        function handleKeyPress(e){
+        var key= 0;
+        if(window.event){
+            key= e.keyCode;
+        }
+        else if(e.which){
+            key= e.which;
+        }
+        if(key==13){
+            sbutton.click();
+            return false;
+            }
+        }
+        </script> 
+         </div>
+         
+        <br/>
+         
+    <apex:pageBlock id="block">
+        <apex:pageBlockButtons location="top" >
+        <apex:commandButton value="New Firm" action="{!newaction}" rendered="{!$ObjectType.MARSFirmSummary__c.createable}" style="align:left;"/>|
+        <!-- <apex:commandButton action="{!refresh}" image="{!$Resource.Refresh_Image}" /> -->
+        <apex:actionfunction name="refresh" action="{!refresh}"/> 
+        <apex:image value="{!$Resource.Refresh_Image2}" onclick="refresh();" style="cursor:pointer;vertical-align:middle;padding:2px 3px;width:1.8%"/>                 
+        <div style="float:right;">
+            <div id="alpha" style="display:{!if(showContent,"none","block")};">
+            <apex:repeat value="{!alphabet}" var="a">
+                         <apex:commandLink value="{!a}" action="{!refreshList}" rerender="form" id="alphabets" styleClass="ul">
+            <apex:param name="alpha" value="{!a}" assignTo="{!alphabetvalue}"/>
+            </apex:commandLink>
+             &nbsp;|&nbsp;
+            </apex:repeat> 
+            </div> 
+        </div>
+
+        </apex:pageBlockButtons>
+    <!-- <div style="overflow:auto;height:200px;"> -->
+
+        <apex:actionStatus id="stat">
+            <apex:facet name="start"> 
+                    <apex:outputPanel layout="block">
+                        <apex:panelGrid columns="2" style="margin:200px;">
+                                <apex:panelGroup >
+                                     <apex:image value="/img/loading.gif" title="Processing..." style="vertical-align:middle;" />
+                                </apex:panelGroup>
+                                <apex:panelGroup >
+                                        <div class="messageText">Loading...</div>
+                                </apex:panelGroup> 
+                        </apex:panelGrid>
+                </apex:outputPanel>
+            </apex:facet>
+
+            <apex:facet name="stop"> 
+                <apex:outputPanel styleClass="tableContainer" layout="block">   
+                    <apex:pageBlockTable value="{!CurrentFirmList}" var="a" styleclass="floatingHeaderTable">                         
+                        <apex:column headerValue="Action">     
+                            <apex:outputLink value="/{!a.Id}/e?retURL=/apex/marssfs__VF_FirmView" styleClass="EditButtonClass" >Edit</apex:outputLink>
+                        </apex:column>
+                        <apex:column styleclass="x-grid3-hd-inner x-grid3-hd-00N90000007hdBm">
+                            <apex:facet name="header">   
+                                <apex:commandLink action="{!ViewData}" value="Firm Name{!IF(sortExpression=='MarsFirmNm__c',IF(sortDirection='DESC',' ↓',' ↑'),'')}" styleClass="x-grid3-hd-btn" id="firmname">
+                                    <apex:param value="MarsFirmNm__c" name="column" assignTo="{!sortExpression}" ></apex:param>
+                                </apex:commandLink>
+                            </apex:facet>
+                            <apex:outputLink value="/{!a.Id}?retURL=/apex/VF_FirmView" style="">{!a.SfdcFirmId__r.MarsFirmNm__c}</apex:outputLink>
+                        </apex:column>
+
+                        <apex:column headerValue="BillingCity" value="{!a.SfdcFirmId__r.BillingCity}"> 
+                            <apex:facet name="header">
+                                <apex:commandLink action="{!ViewData}" value="BillingCity{!IF(sortExpression=='BillingCity',IF(sortDirection='DESC',' ↓',' ↑'),'')}">
+                                    <apex:param value="BillingCity" name="column" assignTo="{!sortExpression}" ></apex:param>
+                                </apex:commandLink>
+                            </apex:facet>
+                        </apex:column>
+                        <apex:column headerValue="BillingState/Province" value="{!a.SfdcFirmId__r.BillingState}">
+                            <apex:facet name="header">
+                                <apex:commandLink action="{!ViewData}" value="BillingState/Province{!IF(sortExpression=='BillingState',IF(sortDirection='DESC',' ↓',' ↑'),'')}">
+                                    <apex:param value="BillingState" name="column" assignTo="{!sortExpression}" ></apex:param>
+                                </apex:commandLink>
+                            </apex:facet>
+                        </apex:column>
+                        <apex:column headerValue="YTD Purchases">
+                            <apex:facet name="header">
+                                <apex:commandLink action="{!ViewData}" value="YTD Purchases{!IF(sortExpression=='MarsYtdPurch__c',IF(sortDirection='DESC',' ↓',' ↑'),'')}">
+                                    <apex:param value="MarsYtdPurch__c" name="column" assignTo="{!sortExpression}" ></apex:param>
+                                </apex:commandLink>
+                            </apex:facet>                    
+                            <apex:outputText value="{0, number,###,###,###,##0}">
+                                <apex:param value="{!a.MarsYtdPurch__c}"/>
+                            </apex:outputtext>
+                        </apex:column>
+                        <apex:column headerValue="YTD Redemptions">
+                            <apex:facet name="header">
+                                <apex:commandLink action="{!ViewData}" value="YTD Redemptions{!IF(sortExpression=='MarsYtdRed__c',IF(sortDirection='DESC',' ↓',' ↑'),'')}">
+                                    <apex:param value="MarsYtdRed__c" name="column" assignTo="{!sortExpression}" ></apex:param>
+                                </apex:commandLink>
+                            </apex:facet>                    
+                            <apex:outputText value="{0, number,###,###,###,##0}">
+                                <apex:param value="{!a.MarsYtdRed__c}"/>
+                            </apex:outputtext>
+                        </apex:column>
+                        <apex:column headerValue="Current Assets">
+                            <apex:facet name="header">
+                                <apex:commandLink action="{!ViewData}" value="Current Assets{!IF(sortExpression=='MarsCAssets__c',IF(sortDirection='DESC',' ↓',' ↑'),'')}">
+                                    <apex:param value="MarsCAssets__c" name="column" assignTo="{!sortExpression}" ></apex:param>
+                                </apex:commandLink>
+                            </apex:facet>                   
+                            <apex:outputText value="{0, number,###,###,###,##0}">
+                                <apex:param value="{!a.MarsCAssets__c}"/>
+                            </apex:outputtext>
+                        </apex:column>
+                    </apex:pageBlockTable>
+                     <apex:outputText value="No records to display" escape="false" rendered="{!(CurrentFirmList.size == 0)}"/>
+                </apex:outputPanel>
+            </apex:facet>
+        </apex:actionStatus>
+
+    <!-- </div> -->
+
+        <apex:panelGrid columns="4" width="100%" columnClasses="colClass">
+            <!-- <apex:outputText value="{!standardsetcon.PageSize}" style="padding-right:40em;"/> -->
+            <apex:outputText value="" style="float:right;width:40%" />
+            <apex:panelGrid columns="4">
+                <apex:commandButton status="stat" reRender="block" value="<<" action="{!standardsetcon.first}" disabled="{!!standardsetcon.hasPrevious}" style="border:none;"/>
+                <apex:commandButton status="stat" reRender="block" value="Previous" action="{!standardsetcon.Previous}" disabled="{!!standardsetcon.hasPrevious}" style="border:none;"/>
+                <apex:commandButton status="stat" reRender="block" value="Next" action="{!Next}" disabled="{!!standardsetcon.hasNext}" style="border:none;"/>
+                <apex:commandButton status="stat" reRender="block" value=">>" action="{!standardsetcon.last}" disabled="{!!standardsetcon.hasNext}" style="border:none;" />
+                <!-- <apex:commandLink value="<<" action="{!standardsetcon.first}" rerender="block" status="stat"/>
+                <apex:commandLink value="Previous" action="{!standardsetcon.previous}" rerender="block" status="stat"/>
+                <apex:commandlink value="Next" action="{!standardsetcon.next}" rerender="block" status="stat"/>
+                <apex:commandLink value=">>" action="{!standardsetcon.last}" rerender="block" status="stat"/> -->
+            </apex:panelGrid>
+            <apex:outputText value="Page" style="float:right;"/>
+            <apex:outputText value="{!standardsetcon.PageNumber}"/>
+        </apex:panelGrid>
+
+    </apex:pageBlock>
+    </apex:form>
+</apex:page>

@@ -1,0 +1,217 @@
+<apex:component controller="MarsRepFundSummaryController">
+     <apex:messages style="color:#cc0000;"/>
+     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+    <script src="{!URLFOR($Resource.jquery_vfFloat)}"></script>
+    <script src="{!URLFOR($Resource.jquery_fixedheadertable_min)}"></script>
+    <style>
+        
+        .container_12 .grid_4 {
+            width: 100%;
+        }
+        
+      
+        .height400 {
+                overflow-x: auto;
+                overflow-y: auto;
+        }
+        #myTable05 tr:first-child {
+        
+        background-image: -moz-linear-gradient(
+        top,
+        rgba(255,255,255,0.4) 0%,
+        rgba(255,255,255,0.2) 50%,
+        rgba(255,255,255,0.1) 51%,
+        rgba(255,255,255,0.0) 100%);
+    
+    background-image: -webkit-gradient(
+        linear, left top, left bottom,
+        color-stop(0%,rgba(255,255,255,0.4)),
+        color-stop(50%,rgba(255,255,255,0.2)),
+        color-stop(51%,rgba(255,255,255,0.1)),
+        color-stop(100%,rgba(255,255,255,0.0)));
+    }
+        
+        .fancyTable td, .fancyTable th {
+            padding: 4px;
+            
+            }
+        
+       .fancyTable thead tr th,
+        .fancyTable thead tr td,
+        .fancyTable tfoot tr th, 
+        .fancyTable tfoot tr td {
+        /* appearance */
+        background-color: #8ca9cf;
+        background-image: -moz-linear-gradient(
+            top,
+            rgba(255,255,255,0.4) 0%,
+            rgba(255,255,255,0.2) 50%,
+            rgba(255,255,255,0.1) 51%,
+            rgba(255,255,255,0.0) 100%);
+        
+        background-image: -webkit-gradient(
+            linear, left top, left bottom,
+            color-stop(0%,rgba(255,255,255,0.4)),
+            color-stop(50%,rgba(255,255,255,0.2)),
+            color-stop(51%,rgba(255,255,255,0.1)),
+            color-stop(100%,rgba(255,255,255,0.0)));
+            
+        /* text */
+        color: #121517;
+        font-size: 12px;
+        font-weight: bold;
+        font-family:Arial, Helvetica, sans-serif;
+        text-shadow: 0 1px 1px #e8ebee;
+        }
+
+        .fancyTable thead tr th,
+        .fancyTable thead tr td,
+        .fancyTable tfoot tr th, 
+        .fancyTable tfoot tr td {
+            /* appearance */
+            background-color: #e0e3e5;           
+                
+            /* text */
+            color: #121517;
+          
+            }
+        .fht-table,
+        .fht-table thead,
+        .fht-table tfoot,
+        .fht-table tbody,
+        .fht-table tr,
+        .fht-table th,
+        .fht-table td {
+            /* position */
+            margin: 0;
+            
+            /* size */
+            padding: 2px;
+        
+            /* text */
+            font-size: 100%;
+            font: inherit;
+            vertical-align: top;
+            }
+        
+        .fht-table {
+            /* appearance */
+            border-collapse: collapse;
+            border-spacing: 0;
+            }
+        
+        /* @end */
+        
+        /* @group Content */
+        
+        .fht-table-wrapper,
+        .fht-table-wrapper .fht-thead,
+        .fht-table-wrapper .fht-tfoot,
+        .fht-table-wrapper .fht-fixed-column .fht-tbody,
+        .fht-table-wrapper .fht-fixed-body .fht-tbody,
+        .fht-table-wrapper .fht-tbody {
+            /* appearance */
+            overflow: hidden;
+            
+            /* position */
+            position: relative;
+            }
+        
+            .fht-table-wrapper .fht-fixed-body .fht-tbody,
+            .fht-table-wrapper .fht-tbody {
+                /* appearance */
+                overflow: auto;
+                }
+        
+                .fht-table-wrapper .fht-table .fht-cell {
+                    /* appearance */
+                    overflow: hidden;
+                    
+                    /* size */
+                    height: 1px;
+                    }
+            
+    .fht-table-wrapper .fht-fixed-column,
+    .fht-table-wrapper .fht-fixed-body {
+        /* position */
+        top: 0;
+        left: 0;
+        position: absolute;
+        }
+        
+    .fht-table-wrapper .fht-fixed-column {
+        /* position */
+        z-index: 1;
+        }
+            
+    </style>
+    <apex:pageBlock >
+        <div style="float:right;display:{!if($Profile.Name == 'System Administrator',"block", "none")};">
+            <span class="help" title="Customize Product List" style="float:left">            
+                <a href="/setup/FieldSetEditor.apexp?tableEnumOrId={!$Setup.FieldSetIds__c.marssfs__SummaryObject__c}&setupid=CustomObjects&id={!$Setup.FieldSetIds__c.marssfs__MarsRep__c}&retURL=/{!$CurrentPage.parameters.Id}" target="_parent">
+                    <span class="linkSpan" style="color:#015BA7">Customize Product List</span>
+                    &nbsp;&nbsp;<img src="/s.gif" alt="Customize Product List" class="helpIcon" title="Customize Product List"/>
+                </a>                                                  
+            </span>
+        </div>
+        <div class="container_12">            
+            <div class="grid_4 height400" style="height:{!if(fundRecords.size != 0,'170px','')};">
+                <table class="fancyTable" id="myTable05" cellpadding="0" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <apex:outputText rendered="{!(fundRecords.size == 0)}" value="No records to display" style="color:black;"/>
+                            <apex:repeat rendered="{!(fundRecords.size != 0)}" value="{!fields}" var="f">
+                                <th style="text-align:{!if((f.Label = 'Product' || f.Label = 'Assets As of Date'),'Left' , 'Right')};width:{!if((f.Label = 'Product' || f.Label = 'Assets As of Date'),'150px' ,'')};">
+                                        {!f.Label}
+                                </th>
+                            </apex:repeat>
+                        </tr>
+                    </thead>
+                    <tfoot>
+                        <apex:repeat value="{!fundTotal}" var="item">
+                            <tr>
+                                   <apex:repeat value="{!vfFields}" var="itm">                                    
+                                        <th style="text-align:{!if((itm = 'MarsProdTitle__c'||itm = 'MARSAssetsAsofDate__c'), 'Left', 'Right')} !important;">
+                                            <apex:outputtext rendered="{!(item[itm] != null && (itm = 'MarsProdTitle__c'||itm = 'MARSAssetsAsofDate__c'))}" value="{!if(itm = 'MarsProdTitle__c', item[itm], '{0,date,MM/dd/yyyy}')}" > 
+                                                <apex:param value="{!item[itm]}"/>
+                                            </apex:outputtext>
+                                            <apex:outputText rendered="{!item[itm] != null && (itm != 'MarsProdTitle__c'&&itm != 'MARSAssetsAsofDate__c') && (($Setup.MARSDefaults__c.CustomAmountFormat__c=true && item[itm] <> null && item[itm] >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false))}" value="{0, number,###,###,###,##0}">
+                                                <apex:param value="{!item[itm]}"/>
+                                            </apex:outputtext>
+                                            <apex:outputText rendered="{!item[itm] != null && (itm != 'MarsProdTitle__c'&&itm != 'MARSAssetsAsofDate__c') && (($Setup.MARSDefaults__c.CustomAmountFormat__c=true && item[itm] <> null && item[itm] < 0))}" value="({0, number,###,###,###,##0})" style="color:red;">
+                                                <apex:param value="{!item[itm]*-1}"/>
+                                            </apex:outputtext>
+                                            <apex:outputText rendered="{!if(itm = 'MarsProdTitle__c' && item[itm] == null, True, False)}" value="Total" style="font-weight:900;" styleClass=" zen-deemphasize"/>            
+                                        </th> 
+                                   </apex:repeat>                            
+                            </tr>
+                        </apex:repeat>
+                    </tfoot>
+                    <tbody>
+                        <apex:variable var="call" value="{!0}" /> 
+                                <apex:repeat value="{!fundRecords}" var="item">
+                                    <!-- ListRow -->
+                                    <apex:variable var="call" value="{!call+1}"/>
+                                <tr class="dataRow even first">
+                                    <apex:repeat value="{!vfFields}" var="itm">
+                                       <td align="{!if((itm = 'MarsProdTitle__c'||itm = 'MARSAssetsAsofDate__c'), 'left', 'right')}" class=" zen-deemphasize" scope="col" style="background-color:{!if(itm = 'MarsProdTitle__c', ' #FFFFFF', '#FFFFFF')};">                                       
+                                            <apex:outputtext rendered="{!item[itm] != null && (itm = 'MarsProdTitle__c' || itm ='MARSAssetsAsofDate__c') &&  fundrecords.size != call}" value="{!if(itm = 'MarsProdTitle__c', item[itm], '{0,date,MM/dd/yyyy}')}" > 
+                                                <apex:param value="{!item[itm]}"/>
+                                            </apex:outputtext>
+                                            <apex:outputtext rendered="{!item[itm] != null && (itm != 'MarsProdTitle__c' && itm !='MARSAssetsAsofDate__c') && fundrecords.size != call && (($Setup.MARSDefaults__c.CustomAmountFormat__c=true && item[itm] <> null && item[itm] >= 0)||($Setup.MARSDefaults__c.CustomAmountFormat__c=false))}" value="{0, number,###,###,###,##0}">
+                                                <apex:param value="{!item[itm]}"/>
+                                            </apex:outputtext>
+                                            <apex:outputtext rendered="{!item[itm] != null && (itm != 'MarsProdTitle__c' && itm !='MARSAssetsAsofDate__c') && fundrecords.size != call && (($Setup.MARSDefaults__c.CustomAmountFormat__c=true && item[itm] <> null && item[itm] < 0))}" value="({0, number,###,###,###,##0})" style="{!If($Setup.MARSDefaults__c.CustomAmountFormat__c,'color:red;','')}">
+                                                <apex:param value="{!item[itm]*-1}"/>
+                                            </apex:outputtext>
+                                       </td>
+                                    </apex:repeat>
+                                </tr>
+                            </apex:repeat> 
+                    </tbody>
+                </table>
+            </div>
+            <div class="clear"></div>
+        </div>
+    </apex:pageBlock>
+</apex:component>

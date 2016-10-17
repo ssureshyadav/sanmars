@@ -1,0 +1,153 @@
+<apex:page standardController="MARSFirmSummary__c" extensions="MarsFirmSumController">
+<script type="text/javascript">
+var __sfdcSessionId = '{!GETSESSIONID()}';
+</script>
+<script src="../../soap/ajax/23.0/connection.js" type="text/javascript"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+<script type="text/javascript">
+var apinames_req='';  
+var apinames = '';   
+j$ = jQuery.noConflict();
+j$(document).ready(function() {
+    if (j$(".errorMsg")[0]){                   
+       j$("#divError").css("display","block");  
+    }
+});
+
+function detailLayoutResults(result,Layoutname)
+{
+    var allTheLayouts = result.getArray("layouts"); 
+    for (var i = 0; i < allTheLayouts.length; i++)
+    {
+        var layout = allTheLayouts[i];
+        var elSections = layout.getArray(Layoutname);
+        for (var j = 0; j < elSections.length; j++)
+        {
+            var els = elSections[j];
+            var allTheLayoutRows = els.getArray("layoutRows");
+            for (var k = 0; k < allTheLayoutRows.length; k++)
+            {
+                var lr = allTheLayoutRows[k];
+                var lis = lr.getArray("layoutItems");
+                for (var h = 0; h < lis.length; h++)
+                {
+                    var li = lis[h];
+                    if (li.layoutComponents != null && li.layoutComponents.length == 2) 
+                    {
+                        if(apinames.indexOf(li.layoutComponents[1].value)=='-1')
+                        {
+                            apinames+= li.layoutComponents[1].value + ',';
+                        }
+                        if(apinames_req.indexOf(li.layoutComponents[1].value)=='-1')
+                        {
+                            if(li.required==true || li.required=='true')
+                            apinames_req+=li.layoutComponents[1].value +',';
+                        }
+                    }
+                    else if (li.layoutComponents != null)           
+                    {
+                        if(apinames.indexOf(li.layoutComponents.value)=='-1')
+                        {
+                            if(li.required==true || li.required=='true')
+                            apinames_req+=li.layoutComponents.value +',';
+                            apinames+= li.layoutComponents.value + ',';
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+//Produce Fields on pagelayout using detailLayoutResults Method
+function getfieldsonpagelayout()
+{
+    try
+    {
+        var checkreload='{!checkreloadpage}';
+        var objectname='{!JSENCODE(objectselected)}';
+        var result;
+        result = sforce.connection.describeLayout(objectname, new Array(''));
+        detailLayoutResults(result,'editLayoutSections');          
+        detailLayoutResults(result,'detailLayoutSections');        
+        apinames+='%firmsum%'+apinames_req;
+        apinames=apinames.replace(',undefined','').replace('undefined,','');
+        if(checkreload == 'false'){
+            calledonload(apinames);
+        }
+    }
+    catch (error)
+    {
+        var result = sforce.connection.describeLayout(objectname);
+        detailLayoutResults(result,'editLayoutSections');          
+        detailLayoutResults(result,'detailLayoutSections');        
+        apinames+='%firmsum%'+apinames_req;
+        apinames=apinames.replace(',undefined','').replace('undefined,','');
+        if(checkreload == 'false'){
+            calledonload(apinames);
+        }                                      
+    }
+}
+    
+</script>
+<apex:form id="frmid">
+<apex:actionFunction name="calledonload" action="{!calledonload}"  rerender="mainpanel" status="mystatus">
+<apex:param name="param1" assignTo="{!rectypefld}" value=""/>
+</apex:actionFunction>
+</apex:form>
+<apex:form id="mainpanel">
+    <apex:pageBlock rendered="{!checkreloadpage}">
+    <apex:pageblockbuttons >
+        <apex:commandButton value="Save" action="{!saveresult}"/>
+        <apex:commandButton value="Save & New" action="{!saveAndNew}"/> 
+        <apex:commandButton action="{!cancelAction}" value="Cancel" immediate="true"/>              
+    </apex:pageblockbuttons>
+    <div id="divError" style="display:none; text-align:center; color:#c00;">
+        <strong> Error: Invalid Data.
+        <br/>
+        Review all error messages below to correct your data.</strong>
+    </div>
+    <div class="pbError" id="errorDiv_ep" style="display: none">Error: Invalid Data. <br/>Review all error messages below to correct your data1.</div>
+    <apex:pageBlockSection title="Firm Information" columns="2" rendered="{!NOT(ISNULL(objectfieldlist))}">
+    <apex:repeat id="dt2i" var="fld" value="{!objectfieldlist}">
+        <!--apex:inputField value="{!MARSFirmSummary__c[fld.apiname]}" required="{!fld.isrequired}" rendered="{!if($ObjectType[objectselected].Fields[fld.apiname].label =='Home Office' || $ObjectType[objectselected].Fields[fld.apiname].label =='Firm Type',false,true)}"/> -->
+        <apex:outputText value="{!MARSFirmSummary__c[fld.apiname]}" rendered="{!if(MARSFirmSummary__c.Id != null &&fld.apiname == 'Name' && !firmNameEdit,true,false)}"/>
+        <apex:inputField value="{!MARSFirmSummary__c[fld.apiname]}" required="{!fld.isrequired}" rendered="{!if(fld.apiname == 'marssfs__SfdcFirmId__c' || fld.apiname == 'marssfs__MarsFirmStatUpdDt__c' || fld.apiname =='marssfs__MarsFirmType__c' || fld.apiname == 'marssfs__MarsLastFirmNoteDt__c' || fld.apiname == 'marssfs__MarsShortNm__c' || fld.apiname == 'marssfs__MARSFirmStatCd__c' ||(MARSFirmSummary__c.Id != null && fld.apiname == 'Name' && !firmNameEdit),false,true)}"/>
+        <apex:outputText value="{!MARSFirmSummary__c[fld.apiname]}" rendered="{!if(MARSFirmSummary__c.Id != null&&fld.apiname == 'marssfs__MARSFirmStatCd__c',true,false)}"/>
+        <apex:selectList rendered="{!MARSFirmSummary__c.Id==null && fld.apiname == 'marssfs__MARSFirmStatCd__c'}" id="firmstatus" value="{!MARSFirmSummary__c.MARSFirmStatCd__c}" size="1">
+            <apex:selectOptions value="{!firmstatusValue}" />
+        </apex:selectList>
+    </apex:repeat> 
+    <apex:outputText rendered="{!MARSFirmSummary__c.Id !=null}" label="Firm Type" value="{!firmtypevalue}" />
+    <apex:selectList rendered="{!MARSFirmSummary__c.Id==null}" id="firmtype" value="{!account.MarsFirmType__c}" size="1">
+        <apex:selectOptions value="{!marsFirmType}" />
+    </apex:selectList>
+    </apex:pageBlockSection>
+        <apex:pageBlockSection title="Home Office Information" rendered="{!MARSFirmSummary__c.Id == null}">
+                <apex:inputField value="{!account.Name}" />
+                <apex:inputField value="{!account.Phone}" />
+                <apex:inputField value="{!Account.BillingCountryCode}" required="true" />
+                <apex:inputField value="{!account.Fax}" />
+                <apex:inputField value="{!account.BillingStreet}" required="true" />
+                <apex:inputField value="{!account.BillingCity}" required="true" />
+                <apex:inputField value="{!account.BillingStateCode}" required="true" />
+                <apex:inputField value="{!account.BillingPostalCode}" required="true" />
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="Home Office Information" rendered="{!MARSFirmSummary__c.Id != null}">
+                <apex:outputText value="{!MARSFirmSummary__c.sfdcfirmid__r.Name}" />
+                <apex:outputText value="{!MARSFirmSummary__c.sfdcfirmid__r.Phone}" />
+                <apex:outputText value="{!MARSFirmSummary__c.sfdcfirmid__r.BillingCountry}" />
+                <apex:outputText value="{!MARSFirmSummary__c.sfdcfirmid__r.Fax}" />
+                <!-- <apex:outputText value="{!account.BillingStreet}" /> -->
+                <apex:outputField value="{!MARSFirmSummary__c.sfdcfirmid__r.BillingStreet}"/>
+                <apex:outputText value="{!MARSFirmSummary__c.sfdcfirmid__r.BillingCity}" />
+                <apex:outputText value="{!MARSFirmSummary__c.sfdcfirmid__r.BillingState}" />
+                <apex:outputText value="{!MARSFirmSummary__c.sfdcfirmid__r.BillingPostalCode}" />
+            </apex:pageBlockSection>
+    </apex:pageBlock>
+</apex:form>
+
+<script type="text/javascript">
+        getfieldsonpagelayout();
+</script>
+</apex:page>

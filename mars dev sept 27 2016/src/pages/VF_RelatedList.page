@@ -1,0 +1,65 @@
+<apex:page standardController="Account" tabStyle="Account" extensions="MarsFirmController" action="{!firmoffices}">
+ 
+     <style>
+     .ul:in{text-decoration:underline}
+         .ul{text-decoration: none;font-size:91%;}
+     
+    .EditButtonClass
+    {
+        color:#015ba7 !important;
+        text-decoration: none;
+    }
+    </style>
+    <apex:sectionHeader subtitle="{!account.MarsFirmNm__c}" title="Office" />
+    
+    &nbsp;«&nbsp;
+    <apex:outputLink value="/apex/VF_firmdetail?id={!account.Id}" style="color: #015ba7;text-decoration: none;margin-top :3px;"> Firm: {!account.MarsFirmNm__c}</apex:outputLink>
+    
+    <apex:form id="form">
+        <apex:inputHidden value="{!account.Name}"/>
+                <div style="float:right;display:{!if(standardsetcon.hasNext || standardsetcon.hasPrevious ,"block","none")};" >
+                <!--    <div id="alpha" style="display:{!if(showContent,"none","block")};">
+                        <apex:repeat value="{!alphabet}" var="a">
+                        <apex:commandLink value="{!a}" action="{!firmOfficesRefreshList}" rerender="form" status="stat" onmouseover="alphacolor(this)" id="alphabets" styleClass="ul">
+                        <apex:param name="alpha" value="{!a}"/>
+                        </apex:commandLink>
+                         &nbsp;|&nbsp;
+                        </apex:repeat> 
+                    </div> -->
+                <!--    <apex:commandButton status="stat" reRender="form" value="Previous" action="{!standardsetcon.Previous}" disabled="{!!standardsetcon.hasPrevious}"  style="border:none;"/>
+                    <apex:commandButton status="stat" reRender="form" value="Next" action="{!Next}" disabled="{!!standardsetcon.hasNext}" style="border:none;"/> -->
+                    <apex:outputText value="<Previous Page" rendered="{!!standardsetcon.hasPrevious}" style="color:gray;"></apex:outputText>
+                     <apex:commandLink rendered="{!if(standardsetcon != null && standardsetcon.ResultSize>25 && standardsetcon.hasPrevious, True, False)}" 
+                        value="<Previous Page" action="{!standardsetcon.previous}" 
+                        rerender="form" status="stat" styleClass="EditButtonClass" />
+                         &nbsp;|&nbsp;
+                     <apex:commandlink rendered="{!if(standardsetcon != null && standardsetcon.ResultSize>25 && standardsetcon.hasNext, True, False)}"
+                        value="Next Page>" action="{!standardsetcon.next}" rerender="form"
+                        status="stat" styleClass="EditButtonClass"/>
+                        <apex:outputText value="Next Page>" rendered="{!!standardsetcon.hasNext}" style="color:gray;"></apex:outputText>
+                         
+    
+                </div> 
+                
+                <apex:pageBlock id="block">
+                
+                <!--apex:commandButton value="New Office" action="{!URLFOR($Action.Account.New, null, [ParentId=Account.Id, ParentAccount=Account.Name])}" reRender="all" style="float: left;margin: -24px 0px 0px 35%;"/> -->
+                <apex:commandButton value="New Office" action="{!newOfficeRelatedList}" immediate="true"/>
+                <!--<apex:commandButton value="New Office" onclick="navigateToUrl('/001/e?retURL=%2Fapex%2FVF_relatedlist?id={!account.Id}&acc3={!Account.Name}&ParentId={!Account.Id}&acc3_lkid={!Account.Id}','new','new');" />-->
+                <!--apex:commandButton value="New Office" action="{!newListOffice}"/> -->
+                <!-- apex:commandButton value="New Office" onclick="navigateToUrl('/003/e?retURL=%2F003%2Fo&accid=001e000000EDCE9AAP',null,'new');" style="float: left;margin: -24px 0px 0px 35%;"/> -->
+
+                    <apex:pageBlockTable value="{!CurrentList}" var="o" id="pageblocktable">
+                        <apex:column headerValue="Action">
+                        <apex:outputLink value="/{!o.Id}/e?retURL=%2Fapex%2Fmarssfs__VF_firmdetail?id={!account.Id}" style="color:#015ba7;text-decoration: none;">Edit</apex:outputLink>
+                         </apex:column>
+                        <apex:column headerValue="Account Name">
+                           <apex:outputLink value="/{!o.Id}">{!o.Name}</apex:outputLink>
+                         </apex:column>
+                         <apex:column value="{!o.billingCity}"/>
+                         <apex:column value="{!o.billingState}"/>
+                         <apex:column value="{!o.Phone}"/>
+                    </apex:pageBlockTable>
+            </apex:pageBlock>
+    </apex:form>
+</apex:page>
