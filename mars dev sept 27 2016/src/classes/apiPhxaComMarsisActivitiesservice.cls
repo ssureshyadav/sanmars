@@ -15,9 +15,13 @@ public class apiPhxaComMarsisActivitiesservice {
     }
     public class GetCallByActivityID_element {
         public String activityID;
+        public String recurrenceId;
+        public Boolean isTickler;
         private String[] activityID_type_info = new String[]{'activityID','http://api.phxa.com/MARSIS/ActivitiesService',null,'0','1','false'};
+        private String[] recurrenceId_type_info = new String[]{'recurrenceId','http://api.phxa.com/MARSIS/ActivitiesService',null,'0','1','false'};
+        private String[] isTickler_type_info = new String[]{'isTickler','http://api.phxa.com/MARSIS/ActivitiesService',null,'1','1','false'};
         private String[] apex_schema_type_info = new String[]{'http://api.phxa.com/MARSIS/ActivitiesService','true','false'};
-        private String[] field_order_type_info = new String[]{'activityID'};
+        private String[] field_order_type_info = new String[]{'activityID','recurrenceId','isTickler'};
     }
     public class GetCallByActivityIDResponse_element {
         public String GetCallByActivityIDResult;
@@ -30,12 +34,6 @@ public class apiPhxaComMarsisActivitiesservice {
         private String[] activityId_type_info = new String[]{'activityId','http://api.phxa.com/MARSIS/ActivitiesService',null,'0','1','false'};
         private String[] apex_schema_type_info = new String[]{'http://api.phxa.com/MARSIS/ActivitiesService','true','false'};
         private String[] field_order_type_info = new String[]{'activityId'};
-    }
-    public class GetRecurenceByActivityID_element {
-        public String activityID;
-        private String[] activityID_type_info = new String[]{'activityID','http://api.phxa.com/MARSIS/ActivitiesService',null,'0','1','false'};
-        private String[] apex_schema_type_info = new String[]{'http://api.phxa.com/MARSIS/ActivitiesService','true','false'};
-        private String[] field_order_type_info = new String[]{'activityID'};
     }
     public class UpsertEmail_element {
         public String emailData;
@@ -51,9 +49,11 @@ public class apiPhxaComMarsisActivitiesservice {
     }
     public class GetFirmEventByActivityID_element {
         public String activityID;
+        public String recurrenceId;
         private String[] activityID_type_info = new String[]{'activityID','http://api.phxa.com/MARSIS/ActivitiesService',null,'0','1','false'};
+        private String[] recurrenceId_type_info = new String[]{'recurrenceId','http://api.phxa.com/MARSIS/ActivitiesService',null,'0','1','false'};
         private String[] apex_schema_type_info = new String[]{'http://api.phxa.com/MARSIS/ActivitiesService','true','false'};
-        private String[] field_order_type_info = new String[]{'activityID'};
+        private String[] field_order_type_info = new String[]{'activityID','recurrenceId'};
     }
     public class UpsertMeetingResponse_element {
         public String UpsertMeetingResult;
@@ -91,12 +91,6 @@ public class apiPhxaComMarsisActivitiesservice {
         private String[] apex_schema_type_info = new String[]{'http://api.phxa.com/MARSIS/ActivitiesService','true','false'};
         private String[] field_order_type_info = new String[]{'meetingData'};
     }
-    public class GetTicklerByActivityIDResponse_element {
-        public String GetTicklerByActivityIDResult;
-        private String[] GetTicklerByActivityIDResult_type_info = new String[]{'GetTicklerByActivityIDResult','http://api.phxa.com/MARSIS/ActivitiesService',null,'0','1','false'};
-        private String[] apex_schema_type_info = new String[]{'http://api.phxa.com/MARSIS/ActivitiesService','true','false'};
-        private String[] field_order_type_info = new String[]{'GetTicklerByActivityIDResult'};
-    }
     public class AuthHeader {
         public String Username;
         public String Password;
@@ -104,12 +98,6 @@ public class apiPhxaComMarsisActivitiesservice {
         private String[] Password_type_info = new String[]{'Password','http://api.phxa.com/MARSIS/ActivitiesService',null,'0','1','false'};
         private String[] apex_schema_type_info = new String[]{'http://api.phxa.com/MARSIS/ActivitiesService','true','false'};
         private String[] field_order_type_info = new String[]{'Username','Password'};
-    }
-    public class GetRecurenceByActivityIDResponse_element {
-        public String GetRecurenceByActivityIDResult;
-        private String[] GetRecurenceByActivityIDResult_type_info = new String[]{'GetRecurenceByActivityIDResult','http://api.phxa.com/MARSIS/ActivitiesService',null,'0','1','false'};
-        private String[] apex_schema_type_info = new String[]{'http://api.phxa.com/MARSIS/ActivitiesService','true','false'};
-        private String[] field_order_type_info = new String[]{'GetRecurenceByActivityIDResult'};
     }
     public class UpsertCall_element {
         public String callData;
@@ -149,9 +137,11 @@ public class apiPhxaComMarsisActivitiesservice {
     }
     public class GetMeetingByActivityID_element {
         public String activityID;
+        public String recurrenceId;
         private String[] activityID_type_info = new String[]{'activityID','http://api.phxa.com/MARSIS/ActivitiesService',null,'0','1','false'};
+        private String[] recurrenceId_type_info = new String[]{'recurrenceId','http://api.phxa.com/MARSIS/ActivitiesService',null,'0','1','false'};
         private String[] apex_schema_type_info = new String[]{'http://api.phxa.com/MARSIS/ActivitiesService','true','false'};
-        private String[] field_order_type_info = new String[]{'activityID'};
+        private String[] field_order_type_info = new String[]{'activityID','recurrenceId'};
     }
     public class DeleteTicklerResponse_element {
         public Boolean DeleteTicklerResult;
@@ -171,29 +161,11 @@ public class apiPhxaComMarsisActivitiesservice {
         private String[] apex_schema_type_info = new String[]{'http://api.phxa.com/MARSIS/ActivitiesService','true','false'};
         private String[] field_order_type_info = new String[]{'DeleteRecurrenceResult'};
     }
-    public class GetTicklerByActivityID_element {
-        public String activityID;
-        private String[] activityID_type_info = new String[]{'activityID','http://api.phxa.com/MARSIS/ActivitiesService',null,'0','1','false'};
-        private String[] apex_schema_type_info = new String[]{'http://api.phxa.com/MARSIS/ActivitiesService','true','false'};
-        private String[] field_order_type_info = new String[]{'activityID'};
-    }
-    public class UpsertTicklerResponse_element {
-        public String UpsertTicklerResult;
-        private String[] UpsertTicklerResult_type_info = new String[]{'UpsertTicklerResult','http://api.phxa.com/MARSIS/ActivitiesService',null,'0','1','false'};
-        private String[] apex_schema_type_info = new String[]{'http://api.phxa.com/MARSIS/ActivitiesService','true','false'};
-        private String[] field_order_type_info = new String[]{'UpsertTicklerResult'};
-    }
     public class GetEmailByActivityID_element {
         public String activityID;
         private String[] activityID_type_info = new String[]{'activityID','http://api.phxa.com/MARSIS/ActivitiesService',null,'0','1','false'};
         private String[] apex_schema_type_info = new String[]{'http://api.phxa.com/MARSIS/ActivitiesService','true','false'};
         private String[] field_order_type_info = new String[]{'activityID'};
-    }
-    public class UpsertTickler_element {
-        public String ticklerData;
-        private String[] ticklerData_type_info = new String[]{'ticklerData','http://api.phxa.com/MARSIS/ActivitiesService',null,'0','1','false'};
-        private String[] apex_schema_type_info = new String[]{'http://api.phxa.com/MARSIS/ActivitiesService','true','false'};
-        private String[] field_order_type_info = new String[]{'ticklerData'};
     }
     public class DeleteTickler_element {
         public String activityId;
@@ -202,7 +174,7 @@ public class apiPhxaComMarsisActivitiesservice {
         private String[] field_order_type_info = new String[]{'activityId'};
     }
     public class ActivitiesServiceSoap {
-        //public String endpoint_x = 'http://192.168.169.103/MIS/ActivitiesService.asmx';
+        //public String endpoint_x = 'http://localhost:800/MARSEIS/ActivitiesService.asmx';
         
         MARSDefaults__c marsDefaults = MarsUtility.MARS_DEFAULTS;
         public String endpoint_x = marsDefaults.MARSEndpointUrl__c +  '/ActivitiesService.asmx';
@@ -237,9 +209,11 @@ public class apiPhxaComMarsisActivitiesservice {
             response_x = response_map_x.get('response_x');
             return response_x.UpsertEmailResult;
         }
-        public String GetCallByActivityID(String activityID) {
+        public String GetCallByActivityID(String activityID,String recurrenceId,Boolean isTickler) {
             apiPhxaComMarsisActivitiesservice.GetCallByActivityID_element request_x = new apiPhxaComMarsisActivitiesservice.GetCallByActivityID_element();
             request_x.activityID = activityID;
+            request_x.recurrenceId = recurrenceId;
+            request_x.isTickler = isTickler;
             apiPhxaComMarsisActivitiesservice.GetCallByActivityIDResponse_element response_x;
             Map<String, apiPhxaComMarsisActivitiesservice.GetCallByActivityIDResponse_element> response_map_x = new Map<String, apiPhxaComMarsisActivitiesservice.GetCallByActivityIDResponse_element>();
             response_map_x.put('response_x', response_x);
@@ -279,9 +253,10 @@ public class apiPhxaComMarsisActivitiesservice {
             response_x = response_map_x.get('response_x');
             return response_x.UpsertCallResult;
         }
-        public String GetFirmEventByActivityID(String activityID) {
+        public String GetFirmEventByActivityID(String activityID,String recurrenceId) {
             apiPhxaComMarsisActivitiesservice.GetFirmEventByActivityID_element request_x = new apiPhxaComMarsisActivitiesservice.GetFirmEventByActivityID_element();
             request_x.activityID = activityID;
+            request_x.recurrenceId = recurrenceId;
             apiPhxaComMarsisActivitiesservice.GetFirmEventByActivityIDResponse_element response_x;
             Map<String, apiPhxaComMarsisActivitiesservice.GetFirmEventByActivityIDResponse_element> response_map_x = new Map<String, apiPhxaComMarsisActivitiesservice.GetFirmEventByActivityIDResponse_element>();
             response_map_x.put('response_x', response_x);
@@ -363,30 +338,10 @@ public class apiPhxaComMarsisActivitiesservice {
             response_x = response_map_x.get('response_x');
             return response_x.UpsertMeetingResult;
         }
-        public String UpsertTickler(String ticklerData) {
-            apiPhxaComMarsisActivitiesservice.UpsertTickler_element request_x = new apiPhxaComMarsisActivitiesservice.UpsertTickler_element();
-            request_x.ticklerData = ticklerData;
-            apiPhxaComMarsisActivitiesservice.UpsertTicklerResponse_element response_x;
-            Map<String, apiPhxaComMarsisActivitiesservice.UpsertTicklerResponse_element> response_map_x = new Map<String, apiPhxaComMarsisActivitiesservice.UpsertTicklerResponse_element>();
-            response_map_x.put('response_x', response_x);
-            WebServiceCallout.invoke(
-              this,
-              request_x,
-              response_map_x,
-              new String[]{endpoint_x,
-              'http://api.phxa.com/MARSIS/ActivitiesService/UpsertTickler',
-              'http://api.phxa.com/MARSIS/ActivitiesService',
-              'UpsertTickler',
-              'http://api.phxa.com/MARSIS/ActivitiesService',
-              'UpsertTicklerResponse',
-              'apiPhxaComMarsisActivitiesservice.UpsertTicklerResponse_element'}
-            );
-            response_x = response_map_x.get('response_x');
-            return response_x.UpsertTicklerResult;
-        }
-        public String GetMeetingByActivityID(String activityID) {
+        public String GetMeetingByActivityID(String activityID,String recurrenceId) {
             apiPhxaComMarsisActivitiesservice.GetMeetingByActivityID_element request_x = new apiPhxaComMarsisActivitiesservice.GetMeetingByActivityID_element();
             request_x.activityID = activityID;
+            request_x.recurrenceId = recurrenceId;
             apiPhxaComMarsisActivitiesservice.GetMeetingByActivityIDResponse_element response_x;
             Map<String, apiPhxaComMarsisActivitiesservice.GetMeetingByActivityIDResponse_element> response_map_x = new Map<String, apiPhxaComMarsisActivitiesservice.GetMeetingByActivityIDResponse_element>();
             response_map_x.put('response_x', response_x);
@@ -425,48 +380,6 @@ public class apiPhxaComMarsisActivitiesservice {
             );
             response_x = response_map_x.get('response_x');
             return response_x.UpsertFirmEventResult;
-        }
-        public String GetTicklerByActivityID(String activityID) {
-            apiPhxaComMarsisActivitiesservice.GetTicklerByActivityID_element request_x = new apiPhxaComMarsisActivitiesservice.GetTicklerByActivityID_element();
-            request_x.activityID = activityID;
-            apiPhxaComMarsisActivitiesservice.GetTicklerByActivityIDResponse_element response_x;
-            Map<String, apiPhxaComMarsisActivitiesservice.GetTicklerByActivityIDResponse_element> response_map_x = new Map<String, apiPhxaComMarsisActivitiesservice.GetTicklerByActivityIDResponse_element>();
-            response_map_x.put('response_x', response_x);
-            WebServiceCallout.invoke(
-              this,
-              request_x,
-              response_map_x,
-              new String[]{endpoint_x,
-              'http://api.phxa.com/MARSIS/ActivitiesService/GetTicklerByActivityID',
-              'http://api.phxa.com/MARSIS/ActivitiesService',
-              'GetTicklerByActivityID',
-              'http://api.phxa.com/MARSIS/ActivitiesService',
-              'GetTicklerByActivityIDResponse',
-              'apiPhxaComMarsisActivitiesservice.GetTicklerByActivityIDResponse_element'}
-            );
-            response_x = response_map_x.get('response_x');
-            return response_x.GetTicklerByActivityIDResult;
-        }
-        public String GetRecurenceByActivityID(String activityID) {
-            apiPhxaComMarsisActivitiesservice.GetRecurenceByActivityID_element request_x = new apiPhxaComMarsisActivitiesservice.GetRecurenceByActivityID_element();
-            request_x.activityID = activityID;
-            apiPhxaComMarsisActivitiesservice.GetRecurenceByActivityIDResponse_element response_x;
-            Map<String, apiPhxaComMarsisActivitiesservice.GetRecurenceByActivityIDResponse_element> response_map_x = new Map<String, apiPhxaComMarsisActivitiesservice.GetRecurenceByActivityIDResponse_element>();
-            response_map_x.put('response_x', response_x);
-            WebServiceCallout.invoke(
-              this,
-              request_x,
-              response_map_x,
-              new String[]{endpoint_x,
-              'http://api.phxa.com/MARSIS/ActivitiesService/GetRecurenceByActivityID',
-              'http://api.phxa.com/MARSIS/ActivitiesService',
-              'GetRecurenceByActivityID',
-              'http://api.phxa.com/MARSIS/ActivitiesService',
-              'GetRecurenceByActivityIDResponse',
-              'apiPhxaComMarsisActivitiesservice.GetRecurenceByActivityIDResponse_element'}
-            );
-            response_x = response_map_x.get('response_x');
-            return response_x.GetRecurenceByActivityIDResult;
         }
         public Boolean DeleteMeeting(String activityId) {
             apiPhxaComMarsisActivitiesservice.DeleteMeeting_element request_x = new apiPhxaComMarsisActivitiesservice.DeleteMeeting_element();

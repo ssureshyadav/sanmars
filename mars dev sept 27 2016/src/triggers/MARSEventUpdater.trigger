@@ -120,12 +120,12 @@ trigger MARSEventUpdater on Event (before insert,before update,after insert,afte
         
         for(Event evt:Trigger.new)
         {
-            if(evt.WhatId != null && mapFirm != null && mapFirm.containsKey(evt.AccountId)) //Processing Firm Events
+           /* if(evt.WhatId != null && mapFirm != null && mapFirm.containsKey(evt.AccountId)) //Processing Firm Events
             {
                 String objectName =String.valueOf(evt.WhatId.getSObjectType());
                 if(objectName == 'marssfs__MARSFirmSummary__c' || objectName == 'Account')
                 {
-                    if(Trigger.new.size() ==1)
+                    if(Trigger.new.size() ==1 && !(evt.isRecurrence))
                     {
                         MARSActivityMISGateway.SyncEvent(evt.Id,'FIRMEVENT');
                     }else{
@@ -139,15 +139,15 @@ trigger MARSEventUpdater on Event (before insert,before update,after insert,afte
                 /*else if(objectName == 'Account')
                 {
                     mapeventAccountIds.put(evt.Id,evt.WhatId);   
-                }*/
-            }
+                }
+            }*/
             
             if(evt.WhoId != null && mapContact != null && mapContact.containsKey(evt.WhoId) && evt.WhatId == null) //Rep Events
             {
                 String objectName =String.valueOf(evt.WhoId.getSObjectType());
                 if(objectName == 'Contact')
                 {
-                    if(Trigger.new.size() ==1)
+                    if(Trigger.new.size() ==1 && !(evt.isRecurrence))
                     {
                         MARSActivityMISGateway.SyncEvent(evt.Id,'MEETING');
                     }else{
@@ -186,6 +186,7 @@ trigger MARSEventUpdater on Event (before insert,before update,after insert,afte
         }*/
         if(!bulkLoad.isEmpty())
         {
+            System.debug(bulkLoad);
             MarsErrorLogging.createBatchData(bulkLoad);
         }
     }
