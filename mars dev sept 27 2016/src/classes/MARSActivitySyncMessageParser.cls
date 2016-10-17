@@ -20,65 +20,152 @@ public class MARSActivitySyncMessageParser
                 {
                     FirmEvent=new Event();
                     try{          
-                    
-                        Dom.XMLNode marsFirmEventid = elementsList.getChildElement('EVENT_ID', 'http://tempuri.org/MarsFirmEvent.xsd');
-                        if(parseNull(marsFirmEventid.getText()) == '')throw new MarsException('Event id cannot be null');
-                        FirmEvent.MarsActivityId__c=parseDecimal(marsFirmEventid.getText());
+                        FirmEvent.Subject ='Firm Event';
+                        FirmEvent.IsAllDayEvent =true;
+                        FirmEvent.MARSActivitytype__c ='EV';
                         
-                        Dom.XMLNode externalFirmEventId = elementsList.getChildElement('EXTERNAL_ID', 'http://tempuri.org/MarsFirmEvent.xsd');
-                        if(externalFirmEventId.getText().length()>0)
+                        Dom.XMLNode firmId = elementsList.getChildElement('FIRM_EXTERNAL_ID', 'http://tempuri.org/MarsFirmEvent.xsd'); 
+                        FirmEvent.whatId =parseNull(firmId.getText());
+                        
+                        Dom.XMLNode contactId = elementsList.getChildElement('REP_EXTERNAL_ID', 'http://tempuri.org/MarsFirmEvent.xsd'); 
+                        if(parseNull(contactId.getText()) != null)
                         {
-                            FirmEvent.Id =parseNull(externalFirmEventId.getText());
+                            //FirmEvent.WhoId =parseNull(contactId.getText());
                         }
-                        
-                        
-                        Dom.XMLNode accountId = elementsList.getChildElement('FIRM_EXTERNAL_ID', 'http://tempuri.org/MarsFirmEvent.xsd');
-                        if(accountId.getText().length()>0)
-                        {
-                            FirmEvent.whatId =parseNull(accountId.getText());
-                        }
-                        
-                        Dom.XMLNode contactId = elementsList.getChildElement('REP_EXTERNAL_ID', 'http://tempuri.org/MarsFirmEvent.xsd');
-                        if(contactId.getText().length()>0)
-                        {
-                            FirmEvent.whoId =parseNull(contactId.getText());
-                        }
-                        
-                        
-                        Dom.XMLNode startDate = elementsList.getChildElement('BEG_DT', 'http://tempuri.org/MarsFirmEvent.xsd'); 
-                        FirmEvent.StartDateTime =parseDateTime(startDate.getText());
-                        
-                        Dom.XMLNode endDate = elementsList.getChildElement('END_DT', 'http://tempuri.org/MarsFirmEvent.xsd'); 
-                        FirmEvent.EndDateTime =parseDateTime(endDate.getText());
-                        
-                        Dom.XMLNode marsUserActivity = elementsList.getChildElement('USERACTIVITY', 'http://tempuri.org/MarsFirmEvent.xsd');
-                        Dom.XMLNode reminder = marsUserActivity.getChildElement('ALARM_ON', 'http://tempuri.org/MarsFirmEvent.xsd'); 
-                        FirmEvent.IsReminderSet =parseNull(reminder.getText())=='Y'?true:false;
-                        
                         
                         Dom.XMLNode recurrence = elementsList.getChildElement('RECURRING_ID', 'http://tempuri.org/MarsFirmEvent.xsd'); 
                         FirmEvent.MarsReccurenceId__c =parseDecimal(recurrence.getText());
-                        FirmEvent.Subject ='Firm Event';
-                        
-                        for(dom.XmlNode childs:elementsList.getChildren())
-                        {
-                            eventRelation =new EventRelation();
-                            if(childs.getName() == 'USERACTIVITY')
+                            
+                        Dom.XMLNode recurrenceflag = elementsList.getChildElement('RECURRENCE_FLG', 'http://tempuri.org/MarsFirmEvent.xsd'); 
+                        if(parsenull(recurrenceflag.getText()) =='Y')
+                        {   
+                            if(recurrence.getText() == '')throw new MarsException('Recurrence id cannot be null');
+                            FirmEvent.IsRecurrence =true;
+
+                            Dom.XMLNode startTime = elementsList.getChildElement('START_TIME', 'http://tempuri.org/MarsFirmEvent.xsd'); 
+                            System.debug(parseDate(startTime.getText()));
+                            FirmEvent.RecurrenceStartDateTime =parseDate(startTime.getText());
+                            FirmEvent.ActivityDate =parseDate(startTime.getText());
+                            
+                            Dom.XMLNode externalRecurrenceId = elementsList.getChildElement('RECURRENCE_EXTERNAL_ID', 'http://tempuri.org/MarsFirmEvent.xsd');
+                            if(externalRecurrenceId.getText().length()>0)
                             {
-                                Dom.XMLNode marsUserExternalId = childs.getChildElement('SFDC_USR_NM', 'http://tempuri.org/MarsFirmEvent.xsd');   
-                                System.debug(marsUserExternalId.getText());
-                                eventRelation.RelationId =marsUserExternalId.getText();
-                                eventRelation.IsInvitee =true;
-                                eventRelation.Status =marsFirmEventid.getText();
-                                lstParseEvtRelationSuccess.add(eventRelation);
+                                FirmEvent.Id =parseNull(externalRecurrenceId.getText());
+                            }
+                            
+                            Dom.XMLNode recurrenceType = elementsList.getChildElement('RECURRENCE_TYPE', 'http://tempuri.org/MarsFirmEvent.xsd'); 
+                            FirmEvent.RecurrenceType =parseNull(recurrenceType.getText());
+                            
+                            System.debug(FirmEvent.RecurrenceType);
+                            
+                            if(!(FirmEvent.RecurrenceType =='RecursYearly' 
+                            || FirmEvent.RecurrenceType =='RecursYearlyNth' 
+                            || FirmEvent.RecurrenceType == 'RecursEveryWeekday'))
+                            {
+                                Dom.XMLNode interval = elementsList.getChildElement('INTERVAL', 'http://tempuri.org/MarsFirmEvent.xsd'); 
+                                FirmEvent.RecurrenceInterval =Integer.valueOf(interval.getText());
+                            }else{
+                                FirmEvent.RecurrenceInterval =null;
+                            }
+                            
+                            if(FirmEvent.RecurrenceType == 'RecursMonthlyNth' || FirmEvent.RecurrenceType =='RecursYearlyNth')
+                            {
+                                Dom.XMLNode instance = elementsList.getChildElement('INSTANCE', 'http://tempuri.org/MarsFirmEvent.xsd'); 
+                                FirmEvent.RecurrenceInstance =parseNull(instance.getText());
+                            }else{
+                                FirmEvent.RecurrenceInstance =null;
+                            }
+                            
+                            if(FirmEvent.RecurrenceType =='RecursWeekly' 
+                            || FirmEvent.RecurrenceType =='RecursMonthlyNth' 
+                            || FirmEvent.RecurrenceType =='RecursYearlyNth' 
+                            || FirmEvent.RecurrenceType == 'RecursEveryWeekday')
+                            {
+                                Dom.XMLNode dayOfWeekMask = elementsList.getChildElement('DAY_OF_WEEK_MASK', 'http://tempuri.org/MarsFirmEvent.xsd'); 
+                                FirmEvent.RecurrenceDayOfWeekMask =Integer.valueOf(dayOfWeekMask.getText());
+                            }else{
+                                FirmEvent.RecurrenceDayOfWeekMask =null;
+                            }
+                            
+                            if(FirmEvent.RecurrenceType =='RecursMonthly' 
+                            || FirmEvent.RecurrenceType =='RecursYearly')
+                            {
+                                Dom.XMLNode dayOfMonth = elementsList.getChildElement('DAY_OF_MONTH', 'http://tempuri.org/MarsFirmEvent.xsd'); 
+                                FirmEvent.RecurrenceDayOfMonth=dayOfMonth.getText() == '0'?null:Integer.valueOf(dayOfMonth.getText());
+                            }else{
+                                FirmEvent.RecurrenceDayOfMonth =null;
+                            }
+                            
+                            if(FirmEvent.RecurrenceType =='RecursYearlyNth' 
+                            || FirmEvent.RecurrenceType =='RecursYearly')
+                            {
+                                Dom.XMLNode monthOfYear = elementsList.getChildElement('MONTH_OF_YEAR', 'http://tempuri.org/MarsFirmEvent.xsd'); 
+                                FirmEvent.RecurrenceMonthOfYear=monthOfYear.getText();
+                                //FirmEvent.RecurrenceMonthOfYear ='January';
+                            }else{
+                                FirmEvent.RecurrenceMonthOfYear=null;
+                            }
+                            
+                            Dom.XMLNode endTime = elementsList.getChildElement('END_TIME', 'http://tempuri.org/MarsFirmEvent.xsd'); 
+                            FirmEvent.RecurrenceEndDateOnly =parseDate(endTime.getText());
+                            
+                        }else
+                        {
+                            Dom.XMLNode marsFirmEventid = elementsList.getChildElement('EVENT_ID', 'http://tempuri.org/MarsFirmEvent.xsd');
+                            if(parseNull(marsFirmEventid.getText()) == '')throw new MarsException('Event id cannot be null');
+                            FirmEvent.MarsActivityId__c=parseDecimal(marsFirmEventid.getText());
+                            
+                            Dom.XMLNode externalFirmEventId = elementsList.getChildElement('EXTERNAL_ID', 'http://tempuri.org/MarsFirmEvent.xsd');
+                            if(externalFirmEventId.getText().length()>0)
+                            {
+                                FirmEvent.Id =parseNull(externalFirmEventId.getText());
+                            }
+                            
+                            Dom.XMLNode startDate = elementsList.getChildElement('BEG_DT', 'http://tempuri.org/MarsFirmEvent.xsd'); 
+                            FirmEvent.StartDateTime =parseDateTime(startDate.getText());
+                            
+                            Dom.XMLNode endDate = elementsList.getChildElement('END_DT', 'http://tempuri.org/MarsFirmEvent.xsd'); 
+                            FirmEvent.EndDateTime =parseDateTime(endDate.getText());
+                            
+                            Dom.XMLNode marsUserActivity = elementsList.getChildElement('USERACTIVITY', 'http://tempuri.org/MarsFirmEvent.xsd');
+                            Dom.XMLNode reminder = marsUserActivity.getChildElement('ALARM_ON', 'http://tempuri.org/MarsFirmEvent.xsd'); 
+                            FirmEvent.IsReminderSet =parseNull(reminder.getText())=='Y'?true:false;
+                            
+                            if(FirmEvent.MarsReccurenceId__c != null)
+                            {
+                                if(FirmEvent.Id == null)
+                                {
+                                    Dom.XMLNode recurrenceSFDCId = elementsList.getChildElement('RECURRENCE_EXTERNAL_ID', 'http://tempuri.org/MarsFirmEvent.xsd'); 
+                                    //FirmEvent.RecurrenceActivityId = parseNull(recurrenceSFDCId.getText());
+                                    MARSActivityUtility.setRecurrenceId.add(recurrenceSFDCId.getText());
+                                }
+                            }
+                            
+                            for(dom.XmlNode childs:elementsList.getChildren())
+                            {
+                                eventRelation =new EventRelation();
+                                if(childs.getName() == 'USERACTIVITY')
+                                {
+                                    Dom.XMLNode marsUserExternalId = childs.getChildElement('SFDC_USR_NM', 'http://tempuri.org/MarsFirmEvent.xsd');   
+                                    System.debug(marsUserExternalId.getText());
+                                    eventRelation.RelationId =marsUserExternalId.getText();
+                                    eventRelation.IsInvitee =true;
+                                    eventRelation.Status =marsFirmEventid.getText();
+                                    lstParseEvtRelationSuccess.add(eventRelation);
+                                }
                             }
                         }
-                        
                         lstParseSuccess.add(FirmEvent);
                     }
                     catch(exception e){
                         Dom.XMLNode FirmEventId = elementsList.getChildElement('EVENT_ID', 'http://tempuri.org/MarsFirmEvent.xsd'); 
-                        FirmEvent.MarsActivityId__c =parseDecimal(FirmEventId.getText());
+                        Dom.XMLNode recurrence = elementsList.getChildElement('RECURRING_ID', 'http://tempuri.org/MarsFirmEvent.xsd'); 
+                        if(FirmEventId.getText() != null)
+                        {
+                            FirmEvent.MarsActivityId__c =parseDecimal(FirmEventId.getText());
+                        }else{
+                            FirmEvent.MARSReccurenceId__c =parseDecimal(recurrence.getText());
+                        }
                         FirmEvent.Description=e.getMessage()+e.getStackTraceString();
                         lstParseFailed.add(FirmEvent);
                     }
@@ -115,63 +202,156 @@ public class MARSActivitySyncMessageParser
                 {
                     Meeting=new Event();
                     try{          
-                    
-                        Dom.XMLNode marsMeetingid = elementsList.getChildElement('ACTIVITY_ID', 'http://tempuri.org/MarsMeeting.xsd');
-                        if(parseNull(marsMeetingid.getText()) == '')throw new MarsException('Activity id cannot be null');
-                        Meeting.MarsActivityId__c=parseDecimal(marsMeetingid.getText());
-                        
-                        Dom.XMLNode externalMeetingId = elementsList.getChildElement('SFDC_EXTERNAL_ID', 'http://tempuri.org/MarsMeeting.xsd');
-                        if(externalMeetingId.getText().length()>0)
-                        {
-                            Meeting.Id =parseNull(externalMeetingId.getText());
-                        }
-                        
+                        Meeting.Subject ='Meeting';
+                        Meeting.IsAllDayEvent =true;
+                        Meeting.MARSActivitytype__c ='MT';
+                            
                         Dom.XMLNode externalId = elementsList.getChildElement('EXTERNAL_REP_ID', 'http://tempuri.org/MarsMeeting.xsd');
                         Meeting.whoId =parseNull(externalId.getText());
                         
-                        Dom.XMLNode startDate = elementsList.getChildElement('BEG_DT', 'http://tempuri.org/MarsMeeting.xsd'); 
-                        //Meeting.StartDateTime =parseDateTime(startDate.getText());
-                        Meeting.StartDateTime =System.today();
-                        
-                        Dom.XMLNode endDate = elementsList.getChildElement('END_DT', 'http://tempuri.org/MarsMeeting.xsd'); 
-                        Meeting.EndDateTime =System.today()+1;
-                        
-                        Dom.XMLNode reminder = elementsList.getChildElement('ALARM_ON', 'http://tempuri.org/MarsMeeting.xsd'); 
-                        Meeting.IsReminderSet =parseNull(reminder.getText())=='Y'?true:false;
-                        
                         Dom.XMLNode recurrence = elementsList.getChildElement('RECURRING_ID', 'http://tempuri.org/MarsMeeting.xsd'); 
                         Meeting.MarsReccurenceId__c =parseDecimal(recurrence.getText());
-                        Meeting.Subject ='Meeting';
-                        
-                        for(dom.XmlNode childs:elementsList.getChildren())
-                        {
-                            eventRelation =new EventRelation();
-                            if(childs.getName() == 'REPACTIVITY' )
+                            
+                        Dom.XMLNode recurrenceflag = elementsList.getChildElement('RECURRENCE_FLG', 'http://tempuri.org/MarsMeeting.xsd'); 
+                        if(parsenull(recurrenceflag.getText()) =='Y')
+                        {   
+                            if(recurrence.getText() == '')throw new MarsException('Recurrence id cannot be null');
+                            Meeting.IsRecurrence =true;
+
+                            Dom.XMLNode startTime = elementsList.getChildElement('START_TIME', 'http://tempuri.org/MarsMeeting.xsd'); 
+                            System.debug(parseDate(startTime.getText()));
+                            Meeting.RecurrenceStartDateTime =parseDate(startTime.getText());
+                            Meeting.ActivityDate =parseDate(startTime.getText());
+                            
+                            Dom.XMLNode externalRecurrenceId = elementsList.getChildElement('RECURRENCE_EXTERNAL_ID', 'http://tempuri.org/MarsMeeting.xsd');
+                            if(externalRecurrenceId.getText().length()>0)
                             {
-                                Dom.XMLNode marsRepexternalId = childs.getChildElement('EXTERNAL_ID', 'http://tempuri.org/MarsMeeting.xsd');    
-                                System.debug(marsRepexternalId.getText());
-                                eventRelation.RelationId =marsRepexternalId.getText();
-                                eventRelation.IsInvitee =true;
-                                eventRelation.Status =marsMeetingid.getText();
-                                lstParseEvtRelationSuccess.add(eventRelation);
+                                Meeting.Id =parseNull(externalRecurrenceId.getText());
                             }
                             
-                            if(childs.getName() == 'USERACTIVITY')
+                            Dom.XMLNode recurrenceType = elementsList.getChildElement('RECURRENCE_TYPE', 'http://tempuri.org/MarsMeeting.xsd'); 
+                            Meeting.RecurrenceType =parseNull(recurrenceType.getText());
+                            
+                            System.debug(Meeting.RecurrenceType);
+                            
+                            if(!(Meeting.RecurrenceType =='RecursYearly' 
+                            || Meeting.RecurrenceType =='RecursYearlyNth' 
+                            || Meeting.RecurrenceType == 'RecursEveryWeekday'))
                             {
-                                Dom.XMLNode marsUserExternalId = childs.getChildElement('SFDC_USR_NM', 'http://tempuri.org/MarsMeeting.xsd');   
-                                System.debug(marsUserExternalId.getText());
-                                eventRelation.RelationId =marsUserExternalId.getText();
-                                eventRelation.IsInvitee =true;
-                                eventRelation.Status =marsMeetingid.getText();
-                                lstParseEvtRelationSuccess.add(eventRelation);
+                                Dom.XMLNode interval = elementsList.getChildElement('INTERVAL', 'http://tempuri.org/MarsMeeting.xsd'); 
+                                Meeting.RecurrenceInterval =Integer.valueOf(interval.getText());
+                            }else{
+                                Meeting.RecurrenceInterval =null;
+                            }
+                            
+                            if(Meeting.RecurrenceType == 'RecursMonthlyNth' || Meeting.RecurrenceType =='RecursYearlyNth')
+                            {
+                                Dom.XMLNode instance = elementsList.getChildElement('INSTANCE', 'http://tempuri.org/MarsMeeting.xsd'); 
+                                Meeting.RecurrenceInstance =parseNull(instance.getText());
+                            }else{
+                                Meeting.RecurrenceInstance =null;
+                            }
+                            
+                            if(Meeting.RecurrenceType =='RecursWeekly' 
+                            || Meeting.RecurrenceType =='RecursMonthlyNth' 
+                            || Meeting.RecurrenceType =='RecursYearlyNth' 
+                            || Meeting.RecurrenceType == 'RecursEveryWeekday')
+                            {
+                                Dom.XMLNode dayOfWeekMask = elementsList.getChildElement('DAY_OF_WEEK_MASK', 'http://tempuri.org/MarsMeeting.xsd'); 
+                                Meeting.RecurrenceDayOfWeekMask =Integer.valueOf(dayOfWeekMask.getText());
+                            }else{
+                                Meeting.RecurrenceDayOfWeekMask =null;
+                            }
+                            
+                            if(Meeting.RecurrenceType =='RecursMonthly' 
+                            || Meeting.RecurrenceType =='RecursYearly')
+                            {
+                                Dom.XMLNode dayOfMonth = elementsList.getChildElement('DAY_OF_MONTH', 'http://tempuri.org/MarsMeeting.xsd'); 
+                                Meeting.RecurrenceDayOfMonth=dayOfMonth.getText() == '0'?null:Integer.valueOf(dayOfMonth.getText());
+                            }else{
+                                Meeting.RecurrenceDayOfMonth =null;
+                            }
+                            
+                            if(Meeting.RecurrenceType =='RecursYearlyNth' 
+                            || Meeting.RecurrenceType =='RecursYearly')
+                            {
+                                Dom.XMLNode monthOfYear = elementsList.getChildElement('MONTH_OF_YEAR', 'http://tempuri.org/MarsMeeting.xsd'); 
+                                Meeting.RecurrenceMonthOfYear=monthOfYear.getText();
+                                //FirmEvent.RecurrenceMonthOfYear ='January';
+                            }else{
+                                Meeting.RecurrenceMonthOfYear=null;
+                            }
+                            
+                            Dom.XMLNode endTime = elementsList.getChildElement('END_TIME', 'http://tempuri.org/MarsMeeting.xsd'); 
+                            Meeting.RecurrenceEndDateOnly =parseDate(endTime.getText());
+                            
+                        }else
+                        {
+                            Dom.XMLNode marsMeetingid = elementsList.getChildElement('ACTIVITY_ID', 'http://tempuri.org/MarsMeeting.xsd');
+                            if(parseNull(marsMeetingid.getText()) == '')throw new MarsException('Activity id cannot be null');
+                            Meeting.MarsActivityId__c=parseDecimal(marsMeetingid.getText());
+                            
+                            Dom.XMLNode externalMeetingId = elementsList.getChildElement('SFDC_EXTERNAL_ID', 'http://tempuri.org/MarsMeeting.xsd');
+                            if(externalMeetingId.getText().length()>0)
+                            {
+                                Meeting.Id =parseNull(externalMeetingId.getText());
+                            }
+                            
+                            Dom.XMLNode startDate = elementsList.getChildElement('BEG_DT', 'http://tempuri.org/MarsMeeting.xsd'); 
+                            Meeting.StartDateTime =parseDateTime(startDate.getText());
+                            //Meeting.StartDateTime =System.today();
+                            
+                            Dom.XMLNode endDate = elementsList.getChildElement('END_DT', 'http://tempuri.org/MarsMeeting.xsd'); 
+                            Meeting.EndDateTime = parseDateTime(endDate.getText());
+                            
+                            Dom.XMLNode reminder = elementsList.getChildElement('ALARM_ON', 'http://tempuri.org/MarsMeeting.xsd'); 
+                            Meeting.IsReminderSet =parseNull(reminder.getText())=='Y'?true:false;
+                            
+                            if(Meeting.MarsReccurenceId__c != null)
+                            {
+                                if(Meeting.Id == null)
+                                {
+                                    Dom.XMLNode recurrenceSFDCId = elementsList.getChildElement('RECURRENCE_EXTERNAL_ID', 'http://tempuri.org/MarsMeeting.xsd'); 
+                                    //Meeting.RecurrenceActivityId = parseNull(recurrenceSFDCId.getText());
+                                    MARSActivityUtility.setRecurrenceId.add(recurrenceSFDCId.getText());
+                                }
+                            }
+                            
+                            for(dom.XmlNode childs:elementsList.getChildren())
+                            {
+                                eventRelation =new EventRelation();
+                                if(childs.getName() == 'REPACTIVITY' )
+                                {
+                                    Dom.XMLNode marsRepexternalId = childs.getChildElement('EXTERNAL_ID', 'http://tempuri.org/MarsMeeting.xsd');    
+                                    System.debug(marsRepexternalId.getText());
+                                    eventRelation.RelationId =marsRepexternalId.getText();
+                                    eventRelation.IsInvitee =true;
+                                    eventRelation.Status =marsMeetingid.getText();
+                                    lstParseEvtRelationSuccess.add(eventRelation);
+                                }
+                                
+                                if(childs.getName() == 'USERACTIVITY')
+                                {
+                                    Dom.XMLNode marsUserExternalId = childs.getChildElement('SFDC_USR_NM', 'http://tempuri.org/MarsMeeting.xsd');   
+                                    System.debug(marsUserExternalId.getText());
+                                    eventRelation.RelationId =marsUserExternalId.getText();
+                                    eventRelation.IsInvitee =true;
+                                    eventRelation.Status =marsMeetingid.getText();
+                                    lstParseEvtRelationSuccess.add(eventRelation);
+                                }
                             }
                         }
                         lstParseSuccess.add(Meeting);
                     }
                     catch(exception e){
-                    
                         Dom.XMLNode MeetingId = elementsList.getChildElement('ACTIVITY_ID', 'http://tempuri.org/MarsMeeting.xsd'); 
-                        Meeting.MarsActivityId__c =parseDecimal(MeetingId.getText());
+                        Dom.XMLNode recurrence = elementsList.getChildElement('RECURRING_ID', 'http://tempuri.org/MarsMeeting.xsd'); 
+                        if(MeetingId.getText() != null)
+                        {
+                            Meeting.MarsActivityId__c =parseDecimal(MeetingId.getText());
+                        }else{
+                            Meeting.MARSReccurenceId__c =parseDecimal(recurrence.getText());
+                        }
                         Meeting.Description=e.getMessage()+e.getStackTraceString();
                         lstParseFailed.add(Meeting);
                     }
@@ -189,129 +369,181 @@ public class MARSActivitySyncMessageParser
         return mapMeeting;
     }
     
-    public static Map<String, List<Task>> parseCall(String callXML)
+    public static Map<String, List<Task>> parseCall(String CallXML)
     {
-        Map<String, List<Task>> mapcall = new Map<String, List<Task>>();
+        Map<String, List<Task>> mapCall = new Map<String, List<Task>>();
         List<Task> lstParseSuccess=new List<Task>();
         List<Task> lstParseFailed=new List<Task>();
-        Task call;
+        Task Call;
         try{
             
             Dom.document doc = new Dom.document();
-            doc.load(callXML);
-            
+            doc.load(CallXML);
             Dom.XMLNode root = doc.getRootElement().getChildElement('CALL', 'http://tempuri.org/MarsCall.xsd');
             if(root !=NULL)
-            {        
+            { 
                 for(dom.XmlNode elementsList: doc.getRootElement().getChildElements())
                 {
-                    call=new Task();
+                    Call=new Task();
                     try{          
-                    
-                        Dom.XMLNode marscallid = elementsList.getChildElement('ACTIVITY_ID', 'http://tempuri.org/MarsCall.xsd');
-                        if(parseNull(marscallid.getText()) == '')throw new MarsException('call id cannot be null');
-                        call.MarsActivityId__c=parseDecimal(marscallid.getText());
-                        
-                        Dom.XMLNode externalcallId = elementsList.getChildElement('EXTERNAL_ID', 'http://tempuri.org/MarsCall.xsd');
-                        if(externalcallId.getText().length()>0)
-                        {
-                            call.Id =parseNull(externalcallId.getText());
-                        }
+                        Call.TaskSubType ='Call';
+                        Call.Subject ='Call';
                         
                         Dom.XMLNode repId = elementsList.getChildElement('EXTERNAL_REP_ID', 'http://tempuri.org/MarsCall.xsd');
                         if(repId.getText().length()>0)
                         {
                             call.whoId =parseNull(repId.getText());
                         }
-                        Dom.XMLNode description = elementsList.getChildElement('NOTES', 'http://tempuri.org/MarsCall.xsd'); 
-                        call.Description =parseNull(description.getText());
                         
-                        call.Status='Completed';
-                        call.TaskSubType ='Call';
-                        call.Subject ='Call';
-                        lstParseSuccess.add(call);
-                    }
-                    catch(exception e){
-                        Dom.XMLNode callId = elementsList.getChildElement('ACTIVITY_ID', 'http://tempuri.org/MarsCall.xsd'); 
-                        call.MarsActivityId__c =parseDecimal(callId.getText());
-                        call.Description=e.getMessage()+e.getStackTraceString();
-                        lstParseFailed.add(call);
-                    }
-                } 
-                mapcall.put('Success',lstParseSuccess);   
-                mapcall.put('Errors', lstParseFailed);
-            }
-        }
-        catch(Exception e){
-            System.debug('\n callXML:'+callXML);
-            System.debug(e.getMessage()+'-'+e.getStackTraceSTring());
-        }
-        return mapcall;
-    }
+                        Dom.XMLNode externalcallId = elementsList.getChildElement('EXTERNAL_ID', 'http://tempuri.org/MarsCall.xsd');
+                        if(externalcallId.getText().length()>0)
+                        {
+                            call.Id =parseNull(externalcallId.getText());
+                        }
+                            
+                        Dom.XMLNode marsactivityType = elementsList.getChildElement('ACT_TYPE', 'http://tempuri.org/MarsCall.xsd');
+                        Call.MARSActivitytype__c =marsactivityType.getText();
+                        if(Call.MARSActivitytype__c == 'CL')
+                        {
+                        
+                            Call.MARSActivitytype__c =marsactivityType.getText();
+                            call.Status='Completed';
+                            Dom.XMLNode marscallid = elementsList.getChildElement('ACTIVITY_ID', 'http://tempuri.org/MarsCall.xsd');
+                            if(parseNull(marscallid.getText()) == '')throw new MarsException('call id cannot be null');
+                            call.MarsActivityId__c=parseDecimal(marscallid.getText());
+                            
+                            Dom.XMLNode description = elementsList.getChildElement('NOTES', 'http://tempuri.org/MarsCall.xsd'); 
+                            call.Description =parseNull(description.getText());
+                        }else 
+                        {
+                            Call.MARSActivitytype__c = 'TK';
+                            Dom.XMLNode recurrence = elementsList.getChildElement('RECURRING_ID', 'http://tempuri.org/MarsCall.xsd'); 
+                            Call.MarsReccurenceId__c =parseDecimal(recurrence.getText());
+                            
+                            
+                            Dom.XMLNode recurrenceflag = elementsList.getChildElement('RECURRENCE_FLG', 'http://tempuri.org/MarsCall.xsd'); 
+                            if(parsenull(recurrenceflag.getText()) =='Y')
+                            {   
+                                if(recurrence.getText() == '')throw new MarsException('Recurrence id cannot be null');
+                                Call.IsRecurrence =true;
     
-    public static Map<String, List<Task>> parseTickler(String TicklerXML)
-    {
-        Map<String, List<Task>> mapTickler = new Map<String, List<Task>>();
-        List<Task> lstParseSuccess=new List<Task>();
-        List<Task> lstParseFailed=new List<Task>();
-        Task tickler;
-        try{
-            
-            Dom.document doc = new Dom.document();
-            doc.load(TicklerXML);
-            
-            Dom.XMLNode root = doc.getRootElement().getChildElement('TICKLER', 'http://tempuri.org/MarsTickler.xsd');
-            if(root !=NULL)
-            {        
-                for(dom.XmlNode elementsList: doc.getRootElement().getChildElements())
-                {
-                    tickler=new Task();
-                    try{          
-                    
-                        Dom.XMLNode marsTicklerid = elementsList.getChildElement('ACTIVITY_ID', 'http://tempuri.org/MarsTickler.xsd');
-                        if(parseNull(marsTicklerid.getText()) == '')throw new MarsException('Activity id cannot be null');
-                        tickler.MarsActivityId__c=parseDecimal(marsTicklerid.getText());
-                        
-                        Dom.XMLNode externalTicklerId = elementsList.getChildElement('EXTERNAL_ID', 'http://tempuri.org/MarsTickler.xsd');
-                        if(externalTicklerId.getText().length()>0)
-                        {
-                            tickler.Id =parseNull(externalTicklerId.getText());
+                               Dom.XMLNode startTime = elementsList.getChildElement('START_TIME', 'http://tempuri.org/MarsCall.xsd'); 
+                                Call.RecurrenceStartDateOnly =parseDate(startTime.getText());
+                                //taskRecurrence.RecurrenceStartDateOnly =System.today();
+                                
+                                Dom.XMLNode marsRecurrenceid = elementsList.getChildElement('RECURRING_ID', 'http://tempuri.org/MarsCall.xsd');
+                                if(parseNull(marsRecurrenceid.getText()) == '')throw new MarsException('Recurrence id cannot be null');
+                                Call.MarsReccurenceId__c=parseDecimal(marsRecurrenceid.getText());
+                                
+                                
+                                Dom.XMLNode externalRecurrenceId = elementsList.getChildElement('RECURRENCE_EXTERNAL_ID', 'http://tempuri.org/MarsCall.xsd');
+                                if(externalRecurrenceId.getText().length()>0)
+                                {
+                                    Call.Id =parseNull(externalRecurrenceId.getText());
+                                }
+                                
+                                Dom.XMLNode recurrenceType = elementsList.getChildElement('RECURRENCE_TYPE', 'http://tempuri.org/MarsCall.xsd'); 
+                                Call.RecurrenceType =parseNull(recurrenceType.getText());
+                                
+                                if(!(Call.RecurrenceType =='RecursYearly' 
+                                || Call.RecurrenceType =='RecursYearlyNth' 
+                                || Call.RecurrenceType == 'RecursEveryWeekday'))
+                                {
+                                    Dom.XMLNode interval = elementsList.getChildElement('INTERVAL', 'http://tempuri.org/MarsCall.xsd'); 
+                                    Call.RecurrenceInterval =Integer.valueOf(interval.getText());
+                                }else
+                                {
+                                    Call.RecurrenceInterval =null;
+                                }
+                                
+                                if(Call.RecurrenceType == 'RecursMonthlyNth' || Call.RecurrenceType =='RecursYearlyNth')
+                                {
+                                    Dom.XMLNode instance = elementsList.getChildElement('INSTANCE', 'http://tempuri.org/MarsCall.xsd'); 
+                                    Call.RecurrenceInstance =parseNull(instance.getText());
+                                }else{
+                                    Call.RecurrenceInstance =null;
+                                }
+                                
+                                if(Call.RecurrenceType =='RecursWeekly' 
+                                || Call.RecurrenceType =='RecursMonthlyNth' 
+                                || Call.RecurrenceType =='RecursYearlyNth' 
+                                || Call.RecurrenceType == 'RecursEveryWeekday')
+                                {
+                                    Dom.XMLNode dayOfWeekMask = elementsList.getChildElement('DAY_OF_WEEK_MASK', 'http://tempuri.org/MarsCall.xsd'); 
+                                    Call.RecurrenceDayOfWeekMask =dayOfWeekMask.getText() == '0'?null:Integer.valueOf(dayOfWeekMask.getText());
+                                }else{
+                                    Call.RecurrenceDayOfWeekMask =null;
+                                }
+     
+                                if(Call.RecurrenceType =='RecursMonthly' 
+                                || Call.RecurrenceType =='RecursYearly')
+                                {
+                                    Dom.XMLNode dayOfMonth = elementsList.getChildElement('DAY_OF_MONTH', 'http://tempuri.org/MarsCall.xsd'); 
+                                    Call.RecurrenceDayOfMonth=dayOfMonth.getText() == '0'?null:Integer.valueOf(dayOfMonth.getText());
+                                }else{
+                                    Call.RecurrenceDayOfMonth=null;
+                                }
+                                
+                                if(Call.RecurrenceType =='RecursYearlyNth' 
+                                || Call.RecurrenceType =='RecursYearly')
+                                {
+                                    Dom.XMLNode monthOfYear = elementsList.getChildElement('MONTH_OF_YEAR', 'http://tempuri.org/MarsCall.xsd'); 
+                                    Call.RecurrenceMonthOfYear=monthOfYear.getText();
+                                    //eventRecurrence.RecurrenceMonthOfYear ='January';
+                                }else{
+                                    Call.RecurrenceMonthOfYear=null;
+                                }
+                                
+                                Dom.XMLNode endTime = elementsList.getChildElement('END_TIME', 'http://tempuri.org/MarsCall.xsd'); 
+                                Call.RecurrenceEndDateOnly =parseDate(endTime.getText());
+                                
+                            }else
+                            {
+                                Dom.XMLNode marsCallid = elementsList.getChildElement('ACTIVITY_ID', 'http://tempuri.org/MarsCall.xsd');
+                                if(parseNull(marsCallid.getText()) == '')throw new MarsException('Activity id cannot be null');
+                                Call.MarsActivityId__c=parseDecimal(marsCallid.getText());
+                                
+                                Dom.XMLNode activityDate = elementsList.getChildElement('BEG_DT', 'http://tempuri.org/MarsCall.xsd'); 
+                                Call.ActivityDate =parseDate(activityDate.getText());
+                                
+                                Dom.XMLNode reminder = elementsList.getChildElement('ALARM_ON', 'http://tempuri.org/MarsCall.xsd'); 
+                                Call.IsReminderSet =parseNull(reminder.getText())=='Y'?true:false;
+                                
+                                if(Call.MarsReccurenceId__c != null)
+                                {
+                                    if(Call.Id == null)
+                                    {
+                                        Dom.XMLNode recurrenceSFDCId = elementsList.getChildElement('RECURRENCE_EXTERNAL_ID', 'http://tempuri.org/MarsCall.xsd'); 
+                                        //Call.RecurrenceActivityId = parseNull(recurrenceSFDCId.getText());
+                                        MARSActivityUtility.setRecurrenceId.add(recurrenceSFDCId.getText());
+                                    }
+                                }
+                            }
                         }
-                        
-                        
-                        Dom.XMLNode repId = elementsList.getChildElement('EXTERNAL_REP_ID', 'http://tempuri.org/MarsTickler.xsd');
-                        if(repId.getText().length()>0)
-                        {
-                            tickler.whoId =parseNull(repId.getText());
-                        }
-                        Dom.XMLNode activityDate = elementsList.getChildElement('BEG_DT', 'http://tempuri.org/MarsTickler.xsd'); 
-                        tickler.ActivityDate =parseDate(activityDate.getText());
-                        
-                        Dom.XMLNode reminder = elementsList.getChildElement('ALARM_ON', 'http://tempuri.org/MarsTickler.xsd'); 
-                        tickler.IsReminderSet =parseNull(reminder.getText())=='Y'?true:false;
-                        
-                        Dom.XMLNode recurrence = elementsList.getChildElement('RECURRING_ID', 'http://tempuri.org/MarsTickler.xsd'); 
-                        tickler.MarsReccurenceId__c =parseDecimal(recurrence.getText());
-                        tickler.TaskSubType ='Call';
-                        tickler.Subject ='Call';
-                        lstParseSuccess.add(tickler);
+                        lstParseSuccess.add(Call);
                     }
                     catch(exception e){
-                        Dom.XMLNode TicklerId = elementsList.getChildElement('ACTIVITY_ID', 'http://tempuri.org/MarsTickler.xsd'); 
-                        tickler.MarsActivityId__c =parseDecimal(TicklerId.getText());
-                        tickler.Description=e.getMessage()+e.getStackTraceString();
-                        lstParseFailed.add(tickler);
+                        Dom.XMLNode CallId = elementsList.getChildElement('ACTIVITY_ID', 'http://tempuri.org/MarsCall.xsd'); 
+                        Dom.XMLNode recurrence = elementsList.getChildElement('RECURRING_ID', 'http://tempuri.org/MarsCall.xsd'); 
+                        if(CallId.getText() != null)
+                        {
+                            Call.MarsActivityId__c =parseDecimal(CallId.getText());
+                        }else{
+                            Call.MARSReccurenceId__c =parseDecimal(recurrence.getText());
+                        }
+                        Call.Description=e.getMessage()+e.getStackTraceString();
+                        lstParseFailed.add(Call);
                     }
                 } 
-                mapTickler.put('Success',lstParseSuccess);   
-                mapTickler.put('Errors', lstParseFailed);
+                mapCall.put('Success',lstParseSuccess);   
+                mapCall.put('Errors', lstParseFailed);
             }
         }
         catch(Exception e){
-            System.debug('\n TicklerXML:'+TicklerXML);
+            System.debug('\n CallXML:'+CallXML);
             System.debug(e.getMessage()+'-'+e.getStackTraceSTring());
         }
-        return mapTickler;
+        return mapCall;
     }
     
     public static Map<String, List<Sobject>> parseEmail(String EmailXML)
@@ -370,6 +602,7 @@ public class MARSActivitySyncMessageParser
                             message.Incoming =true;
                             
                             email.TaskSubType ='Email';
+                            email.MARSActivitytype__c ='EM';
                             email.Description = 'To: '+ message.ToAddress + ' CC: ' + message.CcAddress + ' BCC: '+ 'Attachment: --none-- Subject: ' + message.Subject +' Body: '+message.TextBody;
                             lstParseMessageSuccess.add(message);
                             lstParseTaskSuccess.add(Email);
@@ -396,196 +629,6 @@ public class MARSActivitySyncMessageParser
         return mapEmail;
     }
     
-     public static Map<String, List<Sobject>> parseRecurrence(String RecurrenceXML)
-    {
-        Map<String, List<Sobject>> mapRecurrence = new Map<String, List<Sobject>>();
-        List<Task> lstParseTaskSuccess=new List<Task>();
-        List<Task> lstParseTaskFailed=new List<Task>();
-        List<Event> lstParseEventSuccess=new List<Event>();
-        List<Event> lstParseEventFailed=new List<Event>();
-        Task taskRecurrence;
-        Event eventRecurrence;
-        try{
-            
-            Dom.document doc = new Dom.document();
-            doc.load(RecurrenceXML);
-            
-            Dom.XMLNode root = doc.getRootElement().getChildElement('RECURRENCE', 'http://tempuri.org/MarsRecurrence.xsd');
-            if(root !=NULL)
-            {        
-                for(dom.XmlNode elementsList: doc.getRootElement().getChildElements())
-                {
-                    try{          
-                        Dom.XMLNode marsActivityType = elementsList.getChildElement('ACT_TYPE', 'http://tempuri.org/MarsRecurrence.xsd');
-                        if(parseNull(marsActivityType.getText()) == '')throw new MarsException('Activity Type cannot be null');
-                        if(marsActivityType.getText() == 'MT' || marsActivityType.getText() == 'EV')
-                        {
-                            eventRecurrence=new Event();
-                            eventRecurrence.EventSubType ='Event';
-                            eventRecurrence.IsRecurrence =true;
-                            
-                            Dom.XMLNode startTime = elementsList.getChildElement('START_TIME', 'http://tempuri.org/MarsRecurrence.xsd'); 
-                            //eventRecurrence.RecurrenceStartDateTime =parseDate(startTime.getText());
-                            eventRecurrence.RecurrenceStartDateTime =DateTime.now();
-                            //eventRecurrence.ActivityDateTime =DateTime.now();
-                            
-                            Dom.XMLNode externalRecurrenceId = elementsList.getChildElement('EXTERNAL_ID', 'http://tempuri.org/MarsRecurrence.xsd');
-                            if(externalRecurrenceId.getText().length()>0)
-                            {
-                                taskRecurrence.Id =parseNull(externalRecurrenceId.getText());
-                            }
-                            
-                            Dom.XMLNode marsRecurrenceid = elementsList.getChildElement('RECURRING_ID', 'http://tempuri.org/MarsRecurrence.xsd');
-                            if(parseNull(marsRecurrenceid.getText()) == '')throw new MarsException('Recurrence id cannot be null');
-                            eventRecurrence.MarsReccurenceId__c=parseDecimal(marsRecurrenceid.getText());
-                            
-                            
-                            Dom.XMLNode recurrenceType = elementsList.getChildElement('RECURRENCE_TYPE', 'http://tempuri.org/MarsRecurrence.xsd'); 
-                            eventRecurrence.RecurrenceType =parseNull(recurrenceType.getText());
-                            
-                            if(!(eventRecurrence.RecurrenceType =='RecursYearly' 
-                            || eventRecurrence.RecurrenceType =='RecursYearlyNth' 
-                            || eventRecurrence.RecurrenceType == 'RecursEveryWeekday'))
-                            {
-                                Dom.XMLNode interval = elementsList.getChildElement('INTERVAL', 'http://tempuri.org/MarsRecurrence.xsd'); 
-                                eventRecurrence.RecurrenceInterval =Integer.valueOf(interval.getText());
-                            }
-                            
-                            if(eventRecurrence.RecurrenceType == 'RecursMonthlyNth' || eventRecurrence.RecurrenceType =='RecursYearlyNth')
-                            {
-                                Dom.XMLNode instance = elementsList.getChildElement('INSTANCE', 'http://tempuri.org/MarsRecurrence.xsd'); 
-                                eventRecurrence.RecurrenceInstance =parseNull(instance.getText());
-                            }
-                            
-                            if(eventRecurrence.RecurrenceType =='RecursWeekly' 
-                            || eventRecurrence.RecurrenceType =='RecursMonthlyNth' 
-                            || eventRecurrence.RecurrenceType =='RecursYearlyNth' 
-                            || eventRecurrence.RecurrenceType == 'RecursEveryWeekday')
-                            {
-                                Dom.XMLNode dayOfWeekMask = elementsList.getChildElement('DAY_OF_WEEK_MASK', 'http://tempuri.org/MarsRecurrence.xsd'); 
-                                eventRecurrence.RecurrenceDayOfWeekMask =dayOfWeekMask.getText() == '0'?null:Integer.valueOf(dayOfWeekMask.getText());
-                            }
- 
-                            if(eventRecurrence.RecurrenceType =='RecursMonthly' 
-                            || eventRecurrence.RecurrenceType =='RecursYearly')
-                            {
-                                Dom.XMLNode dayOfMonth = elementsList.getChildElement('DAY_OF_MONTH', 'http://tempuri.org/MarsRecurrence.xsd'); 
-                                eventRecurrence.RecurrenceDayOfMonth=dayOfMonth.getText() == '0'?null:Integer.valueOf(dayOfMonth.getText());
-                            }
-                            
-                            if(eventRecurrence.RecurrenceType =='RecursYearlyNth' 
-                            || eventRecurrence.RecurrenceType =='RecursYearly')
-                            {
-                                Dom.XMLNode monthOfYear = elementsList.getChildElement('MONTH_OF_YEAR', 'http://tempuri.org/MarsRecurrence.xsd'); 
-                                eventRecurrence.RecurrenceMonthOfYear=monthOfYear.getText();
-                                //eventRecurrence.RecurrenceMonthOfYear ='January';
-                            }
-                            
-                            Dom.XMLNode endTime = elementsList.getChildElement('END_TIME', 'http://tempuri.org/MarsRecurrence.xsd'); 
-                            eventRecurrence.RecurrenceEndDateOnly =parseDate(endTime.getText());
-                            
-                            Dom.XMLNode duration = elementsList.getChildElement('DURATION', 'http://tempuri.org/MarsRecurrence.xsd'); 
-                            eventRecurrence.DurationInMinutes =Integer.valueOf(duration.getText());
-                            lstParseEventSuccess.add(eventRecurrence);
-                        }else if(marsActivityType.getText() =='TK')
-                        {
-                            taskRecurrence=new Task();
-                            taskRecurrence.TaskSubType ='Call';
-                            taskRecurrence.IsRecurrence =true;
-                            
-                            Dom.XMLNode startTime = elementsList.getChildElement('START_TIME', 'http://tempuri.org/MarsRecurrence.xsd'); 
-                            //taskRecurrence.RecurrenceStartDateOnly =parseDate(startTime.getText());
-                            //taskRecurrence.RecurrenceStartDateOnly =System.today();
-                            
-                            Dom.XMLNode marsRecurrenceid = elementsList.getChildElement('RECURRING_ID', 'http://tempuri.org/MarsRecurrence.xsd');
-                            if(parseNull(marsRecurrenceid.getText()) == '')throw new MarsException('Recurrence id cannot be null');
-                            taskRecurrence.MarsReccurenceId__c=parseDecimal(marsRecurrenceid.getText());
-                            
-                            
-                            Dom.XMLNode externalRecurrenceId = elementsList.getChildElement('EXTERNAL_ID', 'http://tempuri.org/MarsRecurrence.xsd');
-                            if(externalRecurrenceId.getText().length()>0)
-                            {
-                                taskRecurrence.Id =parseNull(externalRecurrenceId.getText());
-                            }
-                            
-                            Dom.XMLNode recurrenceType = elementsList.getChildElement('RECURRENCE_TYPE', 'http://tempuri.org/MarsRecurrence.xsd'); 
-                            taskRecurrence.RecurrenceType =parseNull(recurrenceType.getText());
-                            
-                            if(!(taskRecurrence.RecurrenceType =='RecursYearly' 
-                            || taskRecurrence.RecurrenceType =='RecursYearlyNth' 
-                            || taskRecurrence.RecurrenceType == 'RecursEveryWeekday'))
-                            {
-                                Dom.XMLNode interval = elementsList.getChildElement('INTERVAL', 'http://tempuri.org/MarsRecurrence.xsd'); 
-                                taskRecurrence.RecurrenceInterval =Integer.valueOf(interval.getText());
-                            }
-                            
-                            if(eventRecurrence.RecurrenceType == 'RecursMonthlyNth' || eventRecurrence.RecurrenceType =='RecursYearlyNth')
-                            {
-                                Dom.XMLNode instance = elementsList.getChildElement('INSTANCE', 'http://tempuri.org/MarsRecurrence.xsd'); 
-                                taskRecurrence.RecurrenceInstance =parseNull(instance.getText());
-                            }
-                            
-                            if(taskRecurrence.RecurrenceType =='RecursWeekly' 
-                            || taskRecurrence.RecurrenceType =='RecursMonthlyNth' 
-                            || taskRecurrence.RecurrenceType =='RecursYearlyNth' 
-                            || taskRecurrence.RecurrenceType == 'RecursEveryWeekday')
-                            {
-                                Dom.XMLNode dayOfWeekMask = elementsList.getChildElement('DAY_OF_WEEK_MASK', 'http://tempuri.org/MarsRecurrence.xsd'); 
-                                taskRecurrence.RecurrenceDayOfWeekMask =dayOfWeekMask.getText() == '0'?null:Integer.valueOf(dayOfWeekMask.getText());
-                            }
- 
-                            if(taskRecurrence.RecurrenceType =='RecursMonthly' 
-                            || taskRecurrence.RecurrenceType =='RecursYearly')
-                            {
-                                Dom.XMLNode dayOfMonth = elementsList.getChildElement('DAY_OF_MONTH', 'http://tempuri.org/MarsRecurrence.xsd'); 
-                                taskRecurrence.RecurrenceDayOfMonth=dayOfMonth.getText() == '0'?null:Integer.valueOf(dayOfMonth.getText());
-                            }
-                            
-                            if(taskRecurrence.RecurrenceType =='RecursYearlyNth' 
-                            || taskRecurrence.RecurrenceType =='RecursYearly')
-                            {
-                                Dom.XMLNode monthOfYear = elementsList.getChildElement('MONTH_OF_YEAR', 'http://tempuri.org/MarsRecurrence.xsd'); 
-                                taskRecurrence.RecurrenceMonthOfYear=monthOfYear.getText();
-                                //eventRecurrence.RecurrenceMonthOfYear ='January';
-                            }
-                            
-                            Dom.XMLNode endTime = elementsList.getChildElement('END_TIME', 'http://tempuri.org/MarsRecurrence.xsd'); 
-                            taskRecurrence.RecurrenceEndDateOnly =parseDate(endTime.getText());
-    
-                            lstParseTaskSuccess.add(taskRecurrence);
-                        }
-                    }
-                    catch(exception e){
-                        Dom.XMLNode marsActivityType = elementsList.getChildElement('ACT_TYPE', 'http://tempuri.org/MarsRecurrence.xsd');
-                        if(parseNull(marsActivityType.getText()) == '')throw new MarsException('Activity Type cannot be null');
-                        if(marsActivityType.getText() == 'MT' || marsActivityType.getText() == 'EV')
-                        {
-                            Dom.XMLNode RecurrenceId = elementsList.getChildElement('RECURRING_ID', 'http://tempuri.org/MarsRecurrence.xsd'); 
-                            eventRecurrence.MarsReccurenceId__c =parseDecimal(RecurrenceId.getText());
-                            eventRecurrence.Description=e.getMessage()+e.getStackTraceString();
-                            lstParseEventFailed.add(eventRecurrence);
-                        }else if(marsActivityType.getText() =='TK')
-                        {
-                            Dom.XMLNode RecurrenceId = elementsList.getChildElement('RECURRING_ID', 'http://tempuri.org/MarsRecurrence.xsd'); 
-                            taskRecurrence.MarsReccurenceId__c =parseDecimal(RecurrenceId.getText());
-                            taskRecurrence.Description=e.getMessage()+e.getStackTraceString();
-                            lstParseTaskFailed.add(taskRecurrence);
-                        }
-                    }
-                } 
-                mapRecurrence.put('EventSuccess',lstParseEventSuccess);   
-                mapRecurrence.put('EventErrors',lstParseEventFailed);   
-                mapRecurrence.put('TaskSuccess',lstParseTaskSuccess);   
-                mapRecurrence.put('TaskErrors', lstParseTaskFailed);
-            }
-        }
-        catch(Exception e){
-            System.debug('\n RecurrenceXML:'+RecurrenceXML);
-            System.debug(e.getMessage()+'-'+e.getStackTraceSTring());
-        }
-        return mapRecurrence;
-    }
-    
     public static Map<String, List<Sobject>> parseActivityDelete(String deleteXML)
     { 
         Dom.document doc = new Dom.document();
@@ -608,7 +651,7 @@ public class MARSActivitySyncMessageParser
             if(doc.getRootElement().getChildElement('MEETING', null) != null || doc.getRootElement().getChildElement('FIRMEVENTS', null) != null){
                 objectType = 'Event';
             }
-            else if(doc.getRootElement().getChildElement('CALL', null) != null || doc.getRootElement().getChildElement('TICKLER', null) != null){
+            else if(doc.getRootElement().getChildElement('CALL', null) != null || doc.getRootElement().getChildElement('Call', null) != null){
                 objectType = 'Task';
             }else if(doc.getRootElement().getChildElement('RECURRENCE', null) != null)
             {

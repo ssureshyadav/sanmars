@@ -100,7 +100,7 @@ global class MARSActivityMISGateway{
                 marsResponse = service.UpsertFirmEvent(eventEnvelope);
             }
             System.debug(marsResponse);
-            List<Sobject> lstresponse=MarsActivityUtility.updateObjByMARSResponse(lstevent,marsResponse,true,objName);
+            Sobject lstresponse=MarsActivityUtility.updateObjByMARSResponse(lstevent,marsResponse,true,objName);
             MarsActivityUtility.BYPASS_ALL_TRIGGER =true;
             update lstresponse;
             MarsActivityUtility.BYPASS_ALL_TRIGGER=false;
@@ -117,17 +117,12 @@ global class MARSActivityMISGateway{
                 marsResponse = service.UpsertCall(taskEnvelope);
             }
             
-            if(objName == 'TICKLER')
-            {
-                marsResponse = service.UpsertTickler(taskEnvelope);
-            }
-            
             if(objName == 'EMAIL')
             {
                 marsResponse = service.UpsertEmail(taskEnvelope);
             }
             
-            List<Sobject> lstresponse=MarsActivityUtility.updateObjByMARSResponse(lstTask,marsResponse,true,objName);
+            Sobject lstresponse=MarsActivityUtility.updateObjByMARSResponse(lstTask,marsResponse,true,objName);
             MarsActivityUtility.BYPASS_ALL_TRIGGER =true;
             update lstresponse;
             MarsActivityUtility.BYPASS_ALL_TRIGGER=false;
