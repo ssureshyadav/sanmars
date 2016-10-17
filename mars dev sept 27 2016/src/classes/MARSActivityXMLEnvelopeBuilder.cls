@@ -144,7 +144,7 @@ public with sharing class MARSActivityXMLEnvelopeBuilder {
                                     +'<EVENT_TYPE>NC</EVENT_TYPE>'
                                     +'<EVENT_CONTACT_ID>'+(evt.WhoId != null? parseNull(mapContacts.get(evt.WhoId).MarsRepId__c):'')+'</EVENT_CONTACT_ID>'
                                     +'<ORG_USRID>'+integrationUser+'</ORG_USRID>'
-                                    +'<STAT_CD>A</STAT_CD>'
+                                    +'<STAT_CD>S</STAT_CD>'
                                     +'<EVENT_DESC>'+ parseNull(evt.Description) +'</EVENT_DESC>'
                                     +'<EVENT_ADDR1></EVENT_ADDR1>'
                                     +'<EVENT_ADDR2></EVENT_ADDR2>'
@@ -201,7 +201,7 @@ public with sharing class MARSActivityXMLEnvelopeBuilder {
         
         String recuringInfo='';
        
-        if(objName =='Tickler')
+        if(objName =='Call')
         {
             if(tas.RecurrenceActivityId != null)
             {
@@ -255,29 +255,13 @@ public with sharing class MARSActivityXMLEnvelopeBuilder {
                                 +'<EXTERNAL_ID>'+tas.Id+'</EXTERNAL_ID>'
                                 +'<NOTES>'+parseNull(tas.Description)+'</NOTES>'
                                 +'<TKT_ID></TKT_ID>'
+                                +'<ACT_TYPE>'+(tas.Status =='Completed'?'CL':'TK')+'</ACT_TYPE>'
+                                +'<CALL_INOUT>O</CALL_INOUT>'
+                                +'<NOTES>'+parseNull(tas.Description)+'</NOTES>'
+                                +'<STAT_CD>'+(tas.Status =='Completed'?'S':'T')+'</STAT_CD>'
                                 +'</'+objName.toUpperCase() +'>';
         }          
-        
-        if(objName =='Call')
-        {                
-            taskEnvelopeString += '<'+objName.toUpperCase() +'>'
-                                +'<ACTIVITY_ID>'+parseNull(String.valueOf(tas.MarsActivityId__c))+'</ACTIVITY_ID>' 
-                                +'<ACT_TYPE>CL</ACT_TYPE>'
-                                +'<USR_ID>'+integrationUser+'</USR_ID>'
-                                +'<CALL_INOUT>O</CALL_INOUT>'
-                                +'<REP_ID>'+mapContacts.get(tas.WhoId).MarsRepId__c+'</REP_ID>'
-                                +'<ENTRY_DT>'+parseDateTime(tas.CreatedDate)+'</ENTRY_DT>'
-                                +'<ENTRY_USR>'+integrationUser+'</ENTRY_USR>'
-                                +'<NOTES>'+parseNull(tas.Description)+'</NOTES>'
-                                +'<CAMPAIGN_ID></CAMPAIGN_ID>'
-                                +'<EXTERNAL_ID>'+tas.Id+'</EXTERNAL_ID>'
-                                +'<DIST_CHAN_CD></DIST_CHAN_CD>'
-                                +'<UPD_DT>'+parseDateTime(tas.LastModifiedDate)+'</UPD_DT>'
-                                +'<UPD_USR>'+integrationUser+'</UPD_USR>'
-                                +'<TKT_ID></TKT_ID>'
-                                +'</'+objName.toUpperCase() +'>';
-        }
-        
+       
         if(objName =='Email')
         {    
             List<EmailMessage> lstMessage=[Select Id,ActivityId,CcAddress,MessageDate,Status,Subject,TextBody,HasAttachment,ToAddress from EmailMessage where ActivityId = : tas.Id];
@@ -362,30 +346,6 @@ public with sharing class MARSActivityXMLEnvelopeBuilder {
                                 +'<DIST_CHAN_CD></DIST_CHAN_CD>'
                                 +'<ATTACHMENTS>'+parseNull(attach)+'</ATTACHMENTS>'
                                 +'</'+objName.toUpperCase() +'>';
-            
-           /* taskEnvelopeString += '<'+objName.toUpperCase() +'>'
-                                +'<REP_ID>'+mapContacts.get(tas.WhoId).MarsRepId__c+'</REP_ID>'
-                                +'<ACTIVITY_ID>'+parseNull(String.valueOf(tas.MarsActivityId__c))+'</ACTIVITY_ID>' 
-                                +'<CC>'+parseNull(mapTaskEmailMsg.get(tas.Id).CcAddress)+'</CC>'
-                                +'<TO_ADDRESS>'+parseNull(mapTaskEmailMsg.get(tas.Id).ToAddress)+'</TO_ADDRESS>'
-                                +'<SUBJECT>'+parseNull(mapTaskEmailMsg.get(tas.Id).Subject)+'</SUBJECT>'
-                                +'<FILES_ATTACHED><FILES>'+parseNull(files)+'</FILES></FILES_ATTACHED>'
-                                +'<EMAIL_STAT>'+parseNull(marsEmailStatus) +'</EMAIL_STAT>'
-                                +'<STATUS>'+parseNull(status)+'</STATUS>'
-                                +'<SENT_DT>'+parseDateTime(mapTaskEmailMsg.get(tas.Id).MessageDate)+'</SENT_DT>'
-                                +'<ENTRY_DT>'+parseDateTime(tas.CreatedDate)+'</ENTRY_DT>'
-                                +'<ENTRY_USR>'+integrationUser+'</ENTRY_USR>'
-                                +'<UPD_DT>'+parseDateTime(tas.LastModifiedDate)+'</UPD_DT>'
-                                +'<UPD_USR>'+integrationUser+'</UPD_USR>'
-                                +'<CAMPAIGN_ID></CAMPAIGN_ID>'
-                                +'<EMAIL_BODY>'+parseNull(mapTaskEmailMsg.get(tas.Id).TextBody)+'</EMAIL_BODY>'
-                                +'<EXTERNAL_ID>'+parseNull(tas.Id)+'</EXTERNAL_ID>'
-                                +'<TEMPLATE></TEMPLATE>'
-                                +'<ISP_ID></ISP_ID>'
-                                +'<SEND_CLASSIFICATION></SEND_CLASSIFICATION>'
-                                +'<DIST_CHAN_CD></DIST_CHAN_CD>'
-                                +'<ATTACHMENTS>'+parseNull(attach)+'</ATTACHMENTS>'
-                                +'</'+objName.toUpperCase() +'>';*/
         }
         
         

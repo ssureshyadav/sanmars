@@ -11,7 +11,7 @@ global class MARSBatchActivityRetryBulkData implements Database.Batchable<sObjec
         return Database.getQueryLocator([SELECT Id, SfdcAccountId__c, ApexComponentName__c, ApexComponentType__c, SfdcContactId__c, MethodName__c, NoOfRetry__c,OperationType__c,
                                             NextRetryInterval__c,NextRetryAt__c,MarsObjectId__c,MarsBatchId__c
                                             FROM MARSBatchDataStore__c 
-                                            WHERE NextRetryAt__c <= :currentDate
+                                            WHERE NextRetryAt__c <= :currentDate and SfdcAccountId__c = null and SfdcContactId__c = null 
                                             ORDER BY LastModifieddate]);
     }
 
@@ -69,15 +69,17 @@ global class MARSBatchActivityRetryBulkData implements Database.Batchable<sObjec
                                 String meetingEnvelope = MarsActivityXMLEnvelopeBuilder.eventEnvelope(event,'MEETING');
                                 System.debug(meetingEnvelope);
                                 marsResponse = service.UpsertMeeting(meetingEnvelope);
-                                List<Event> evt=MarsActivityUtility.updateObjByMARSResponse(event,marsResponse,true,'MEETING');
-                                lstEvent.addall(evt);
+                                Event evt=(Event)MarsActivityUtility.updateObjByMARSResponse(event,marsResponse,true,'MEETING');
+                                lstEvent.add(evt);
                             }else if(batchData.MarsBatchId__c.contains('FIRMEVENT'))
                             {
                                 String meetingEnvelope = MarsActivityXMLEnvelopeBuilder.eventEnvelope(event,'FIRMEVENT');
                                 System.debug(meetingEnvelope);
                                 marsResponse = service.UpsertFirmEvent(meetingEnvelope);
-                                List<Event> evt=MarsActivityUtility.updateObjByMARSResponse(event,marsResponse,true,'FIRMEVENT');
-                                lstEvent.addall(evt);
+                                System.debug(marsResponse);
+                                Event evt=(Event)MarsActivityUtility.updateObjByMARSResponse(event,marsResponse,true,'FIRMEVENT');
+                                System.debug(evt);
+                                lstEvent.add(evt);
                             }
                         }
                         else if(batchData.OperationType__c.toUpperCase().startsWith('TASK'))
@@ -91,21 +93,21 @@ global class MARSBatchActivityRetryBulkData implements Database.Batchable<sObjec
                             {
                                 String meetingEnvelope = MarsActivityXMLEnvelopeBuilder.taskEnvelope(tas,'CALL');
                                 marsResponse = service.UpsertCall(meetingEnvelope);
-                                List<Task> task=MarsActivityUtility.updateObjByMARSResponse(tas,marsResponse,true,'CALL');
-                                lstTask.addall(task);
+                                Task task=(Task)MarsActivityUtility.updateObjByMARSResponse(tas,marsResponse,true,'CALL');
+                                lstTask.add(task);
                             }else if(batchData.MarsBatchId__c.contains('EMAIL'))
                             {
                                 String meetingEnvelope = MarsActivityXMLEnvelopeBuilder.taskEnvelope(tas,'EMAIL');
                                 marsResponse = service.UpsertEmail(meetingEnvelope);
-                                List<Task> task=MarsActivityUtility.updateObjByMARSResponse(tas,marsResponse,true,'EMAIL');
-                                lstTask.addall(task);
-                            }else if(batchData.MarsBatchId__c.contains('TICKLER'))
+                                Task task=(Task)MarsActivityUtility.updateObjByMARSResponse(tas,marsResponse,true,'EMAIL');
+                                lstTask.add(task);
+                            }/*else if(batchData.MarsBatchId__c.contains('TICKLER'))
                             {
                                 String meetingEnvelope = MarsActivityXMLEnvelopeBuilder.taskEnvelope(tas,'TICKLER');
                                 marsResponse = service.UpsertTickler(meetingEnvelope);
-                                List<Task> task=MarsActivityUtility.updateObjByMARSResponse(tas,marsResponse,true,'TICKLER');
-                                lstTask.addall(task);
-                            }
+                                Task task=(Task)MarsActivityUtility.updateObjByMARSResponse(tas,marsResponse,true,'TICKLER');
+                                lstTask.add(task);
+                            }*/
                         }
                     }
                     errorSuccess.add(batchData);
@@ -193,11 +195,11 @@ global class MARSBatchActivityRetryBulkData implements Database.Batchable<sObjec
             duration=15;
         }
         
-        List<CronTrigger> lstCronTrigger=[SELECT Id,State, CronJobDetail.Id, CronJobDetail.Name, CronJobDetail.JobType FROM CronTrigger where CronJobDetail.Name = 'RetryActivitiesBatchProcess'];
+        List<CronTrigger> lstCronTrigger=[SELECT Id,State, CronJobDetail.Id, CronJobDetail.Name, CronJobDetail.JobType FROM CronTrigger where CronJobDetail.Name = 'RetryBatchProcess'];
         
         if(lstCronTrigger.IsEmpty() && DateTime.now().hour()>= 7)
         {
-            System.scheduleBatch(new MarsBatchRetryBulkData() , 'RetryActivitiesBatchProcess' , duration, 1);
-        }        
+            System.scheduleBatch(new MarsBatchRetryBulkData() , 'RetryBatchProcess' , duration, 10);
+        }         
     }
 }

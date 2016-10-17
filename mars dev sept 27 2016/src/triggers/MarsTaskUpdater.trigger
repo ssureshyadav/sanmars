@@ -95,27 +95,14 @@ trigger MarsTaskUpdater on Task (before insert,before update,after insert,after 
                     }
                 }else if(tas.TaskSubtype == 'Call')
                 {
-                    if(tas.Status =='Completed')
+                    if(Trigger.new.size() ==1 && !tas.isRecurrence)
                     {
-                        if(Trigger.new.size() ==1)
-                        {
-                            MarsActivityMISGateway.SyncTask(tas.Id,'CALL');
-                        }else{
-                            MARSBatchDataStore__c MARSBatchDataStore = new MARSBatchDataStore__c(ApexComponentName__c = 'MarsTaskUpdater', ApexComponentType__c = 'Apex Trigger',
-                                                                       MethodName__c = 'MarsTaskUpdater', ErrorMessage__c = 'Bulk Upsert',MarsObjectId__c =tas.Id,
-                                                                       OperationType__c = 'TASK_UPSERT', NoOfRetry__c=0,MarsBatchId__c =tas.Id+'CALL');
-                             bulkLoad.add(MARSBatchDataStore);
-                        }
+                        MarsActivityMISGateway.SyncTask(tas.Id,'CALL');
                     }else{
-                        if(Trigger.new.size() ==1)
-                        {
-                            MarsActivityMISGateway.SyncTask(tas.Id,'TICKLER');
-                        }else{
-                            MARSBatchDataStore__c MARSBatchDataStore = new MARSBatchDataStore__c(ApexComponentName__c = 'MarsTaskUpdater', ApexComponentType__c = 'Apex Trigger',
-                                                                       MethodName__c = 'MarsTaskUpdater', ErrorMessage__c = 'Bulk Upsert',MarsObjectId__c =tas.Id,
-                                                                       OperationType__c = 'TASK_UPSERT', NoOfRetry__c=0,MarsBatchId__c =tas.Id+'TICKLER');
-                             bulkLoad.add(MARSBatchDataStore);
-                        }
+                        MARSBatchDataStore__c MARSBatchDataStore = new MARSBatchDataStore__c(ApexComponentName__c = 'MarsTaskUpdater', ApexComponentType__c = 'Apex Trigger',
+                                                                   MethodName__c = 'MarsTaskUpdater', ErrorMessage__c = 'Bulk Upsert',MarsObjectId__c =tas.Id,
+                                                                   OperationType__c = 'TASK_UPSERT', NoOfRetry__c=0,MarsBatchId__c =tas.Id+'CALL');
+                         bulkLoad.add(MARSBatchDataStore);
                     }
                 }
             }
