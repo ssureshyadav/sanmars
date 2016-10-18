@@ -24,7 +24,7 @@ public with sharing class MARSActivityDatabaseUtiltiy {
                                    LastModifiedDate,Location,OwnerId,RecurrenceActivityId,RecurrenceDayOfMonth,RecurrenceDayOfWeekMask,
                                    RecurrenceEndDateOnly,RecurrenceInstance,RecurrenceInterval,RecurrenceMonthOfYear,
                                    RecurrenceStartDateTime,RecurrenceTimeZoneSidKey,RecurrenceType,ReminderDateTime,
-                                   ShowAs,StartDateTime,Subject,SystemModstamp,WhatId,WhoId,MarsActivityId__c,MarsReccurenceId__c FROM Event
+                                   ShowAs,StartDateTime,Subject,SystemModstamp,WhatId,WhoId,MarsActivityId__c,MarsReccurenceId__c,MarsMeetingType__c FROM Event
                                     WHERE ID = : eventId];
                                     
 
@@ -47,7 +47,8 @@ public with sharing class MARSActivityDatabaseUtiltiy {
                                LastModifiedById,LastModifiedDate,OwnerId,Priority,RecurrenceActivityId,RecurrenceDayOfMonth,
                                RecurrenceDayOfWeekMask,RecurrenceEndDateOnly,RecurrenceInstance,RecurrenceInterval,RecurrenceMonthOfYear,
                                RecurrenceRegeneratedType,RecurrenceStartDateOnly,RecurrenceTimeZoneSidKey,RecurrenceType,ReminderDateTime,
-                               Status,Subject,SystemModstamp,TaskSubtype,WhatCount,WhatId,WhoCount,WhoId,MarsActivityId__c,MarsReccurenceId__c FROM Task
+                               Status,Subject,SystemModstamp,TaskSubtype,WhatCount,WhatId,WhoCount,WhoId,MarsActivityId__c,MarsReccurenceId__c,
+                               MarsCallType__c,MarsLogCall__c FROM Task
                                     WHERE ID = : taskId];
                                     
 

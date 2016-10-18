@@ -99,14 +99,15 @@ public with sharing class MARSActivityXMLEnvelopeBuilder {
                                     +'<MTG_CONTACT_ID>'+parseNull(mapContacts.get(evt.WhoId).MarsRepId__c)+'</MTG_CONTACT_ID>'
                                     +'<ACTIVITY_ID>'+parseNull(evt.MarsActivityId__c)+'</ACTIVITY_ID>'
                                     +'<ACT_TYPE>MT</ACT_TYPE>'
-                                    +'<MTG_TYPE>I</MTG_TYPE>' //I refers to Internal Meeting In Mars.
-                                    +'<MTG_PLACE></MTG_PLACE>'
+                                    +'<MTG_TYPE>'+parseNull(evt.MarsMeetingType__c)+'</MTG_TYPE>' //I refers to Internal Meeting In Mars.
+                                    //+'<MTG_PLACE>'+parseNull(evt.Location)+'</MTG_PLACE>'
                                     +'<MTG_DESC>'+ parseNull(evt.Subject) +'</MTG_DESC>'
                                     +'<MTG_ADDR1></MTG_ADDR1>'
                                     +'<MTG_ADDR2></MTG_ADDR2>'
                                     +'<MTG_CITY></MTG_CITY>'
                                     +'<STATE_ID></STATE_ID>'
                                     +'<MTG_ZIP></MTG_ZIP>'
+                                    +'<NOTE_TEXT>'+parseNull(evt.Description)+'</NOTE_TEXT>'
                                     +'<COUNTRY_CD></COUNTRY_CD>'
                                     +'<BEG_DT>'+evt.StartDateTime+'</BEG_DT>'
                                     +'<END_DT>'+evt.EndDateTime+'</END_DT>'
@@ -133,7 +134,7 @@ public with sharing class MARSActivityXMLEnvelopeBuilder {
                                     +'<ATTENDEES>'+attendees+'</ATTENDEES>'
                                     +'<RECURRENCE>'+recuringInfo+'</RECURRENCE>'
                                     +'</'+objName.toUpperCase()+'>';
-            }else if(objName =='FirmEvent'){
+            }/*else if(objName =='FirmEvent'){
                 eventEnvelopeString += '<'+objName.toUpperCase()+'>'
                                     +'<FIRM_ID>'+parseNull(mapFirmSummary.get(evt.AccountId).MarsFirmId__c)+'</FIRM_ID>'
                                     +'<EVENT_ID>'+parseNull(String.valueOf(evt.MarsActivityId__c))+'</EVENT_ID>'
@@ -169,7 +170,7 @@ public with sharing class MARSActivityXMLEnvelopeBuilder {
                                     +'<ATTENDEES>'+attendees+'</ATTENDEES>'+
                                     +'<EXTERNAL_ID>'+evt.Id+'</EXTERNAL_ID>'
                                     +'</'+objName.toUpperCase()+'>';
-            }
+            }*/
         
         eventEnvelopeString +='</'+objName.toUpperCase()+'S></Mars'+objName+'DataSet>';
         return eventEnvelopeString;                                 
@@ -221,24 +222,20 @@ public with sharing class MARSActivityXMLEnvelopeBuilder {
                 }
             }
             
-            String priority='';
-            if(tas.Priority =='Normal')
+            String callType=null;
+            if(tas.Status =='Completed')
             {
-                priority ='2';
-            }else if(tas.Priority =='Low')
-            {
-                priority ='3';
-            }else if(tas.Priority =='High')
-            {
-                priority ='1';
+                callType =parseNull(tas.MarsLogCall__c);
+            }else{
+                callType =parseNull(tas.MarsCallType__c);
             }
            
             taskEnvelopeString += '<'+objName.toUpperCase() +'>'
                                 +'<ACTIVITY_ID>'+parseNull(String.valueOf(tas.MarsActivityId__c))+'</ACTIVITY_ID>' 
                                 +'<REP_ID>'+mapContacts.get(tas.WhoId).MarsRepId__c+'</REP_ID>'
                                 +'<USR_ID>'+ integrationUser+'</USR_ID>'
-                                +'<CALL_TYPE>MONT</CALL_TYPE>'
-                                +'<CALL_PRIORITY>'+parseNull(priority) +'</CALL_PRIORITY>'
+                                +'<CALL_TYPE>'+callType+'</CALL_TYPE>'
+                                +'<CALL_PRIORITY>'+parseNull(tas.Priority) +'</CALL_PRIORITY>'
                                 +'<BEG_DT>'+ (tas.ActivityDate == null?DateTime.now():tas.ActivityDate)+'</BEG_DT>'
                                 +'<SCHEDULER>'+(tas.OwnerId == tas.CreatedById?'Y':'N') +'</SCHEDULER>'
                                 +'<ALARM_NOTICE>0</ALARM_NOTICE>'
@@ -254,11 +251,13 @@ public with sharing class MARSActivityXMLEnvelopeBuilder {
                                 +'<CAMPAIGN_ID></CAMPAIGN_ID>'
                                 +'<EXTERNAL_ID>'+tas.Id+'</EXTERNAL_ID>'
                                 +'<NOTES>'+parseNull(tas.Description)+'</NOTES>'
+                                +'<NOTE_TEXT>'+parseNull(tas.Description)+'</NOTE_TEXT>'
                                 +'<TKT_ID></TKT_ID>'
                                 +'<ACT_TYPE>'+(tas.Status =='Completed'?'CL':'TK')+'</ACT_TYPE>'
                                 +'<CALL_INOUT>O</CALL_INOUT>'
                                 +'<NOTES>'+parseNull(tas.Description)+'</NOTES>'
-                                +'<STAT_CD>'+(tas.Status =='Completed'?'S':'T')+'</STAT_CD>'
+                                +'<STAT_CD>'+(tas.Status =='Completed'?'C':'T')+'</STAT_CD>'
+                                //+'<LOGCALL>'+parseNull(tas.MarsLogCall__c)+'</LOGCALL>'
                                 +'</'+objName.toUpperCase() +'>';
         }          
        

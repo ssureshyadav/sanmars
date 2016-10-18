@@ -202,7 +202,7 @@ public class MARSActivitySyncMessageParser
                 {
                     Meeting=new Event();
                     try{          
-                        Meeting.Subject ='Meeting';
+                        //Meeting.Subject ='Meeting';
                         Meeting.IsAllDayEvent =true;
                         Meeting.MARSActivitytype__c ='MT';
                             
@@ -211,7 +211,30 @@ public class MARSActivitySyncMessageParser
                         
                         Dom.XMLNode recurrence = elementsList.getChildElement('RECURRING_ID', 'http://tempuri.org/MarsMeeting.xsd'); 
                         Meeting.MarsReccurenceId__c =parseDecimal(recurrence.getText());
-                            
+                        
+                        Dom.XMLNode meetingType= elementsList.getChildElement('MTG_TYPE', 'http://tempuri.org/MarsMeeting.xsd'); 
+                        Meeting.MarsMeetingType__c=parseNull(meetingType.getText());
+                        
+                        Dom.XMLNode meetingDesc= elementsList.getChildElement('MTG_DESC', 'http://tempuri.org/MarsMeeting.xsd'); 
+                        Meeting.Subject =parseNull(meetingDesc.getText());
+                        
+                        Dom.XMLNode noteText= elementsList.getChildElement('NOTE_TEXT', 'http://tempuri.org/MarsMeeting.xsd'); 
+                        Meeting.Description=parseNull(noteText.getText());
+                        
+                        Dom.XMLNode meetingAddr1= elementsList.getChildElement('MTG_ADDR1', 'http://tempuri.org/MarsMeeting.xsd'); 
+                        Dom.XMLNode meetingAddr2= elementsList.getChildElement('MTG_ADDR2', 'http://tempuri.org/MarsMeeting.xsd'); 
+                        Dom.XMLNode meetingCity= elementsList.getChildElement('MTG_CITY', 'http://tempuri.org/MarsMeeting.xsd'); 
+                        Dom.XMLNode meetingState= elementsList.getChildElement('STATE_ID', 'http://tempuri.org/MarsMeeting.xsd'); 
+                        Dom.XMLNode meetingZip= elementsList.getChildElement('MTG_ZIP', 'http://tempuri.org/MarsMeeting.xsd'); 
+                        Dom.XMLNode meetingcountry= elementsList.getChildElement('COUNTRY_CD', 'http://tempuri.org/MarsMeeting.xsd'); 
+                        
+                        Meeting.Location=parseNull(meetingAddr1.getText().trim()) +' '
+                                           +parseNull(meetingAddr2.getText().trim())+' '
+                                           +parseNull(meetingCity.getText().trim())+' '
+                                           +parseNull(meetingState.getText().trim())+' '
+                                           +parseNull(meetingcountry.getText().trim())+' '
+                                           +parseNull(meetingZip.getText().trim());
+                        
                         Dom.XMLNode recurrenceflag = elementsList.getChildElement('RECURRENCE_FLG', 'http://tempuri.org/MarsMeeting.xsd'); 
                         if(parsenull(recurrenceflag.getText()) =='Y')
                         {   
@@ -317,6 +340,8 @@ public class MARSActivitySyncMessageParser
                                 }
                             }
                             
+                            
+                            
                             for(dom.XmlNode childs:elementsList.getChildren())
                             {
                                 eventRelation =new EventRelation();
@@ -414,9 +439,36 @@ public class MARSActivitySyncMessageParser
                             
                             Dom.XMLNode description = elementsList.getChildElement('NOTES', 'http://tempuri.org/MarsCall.xsd'); 
                             call.Description =parseNull(description.getText());
+                            
+                            string logcall='';
+                            for(dom.XmlNode childs:elementsList.getChildren())
+                            {
+                                if(childs.getName() == 'LOGCALL' )
+                                {
+                                   Dom.XMLNode calltypes = childs.getChildElement('CALL_TYPE', 'http://tempuri.org/MarsCall.xsd');    
+                                   logcall += parseNull(calltypes.getText()) + ';';
+                                }
+                            }
+                            
+                            if(logcall != null)
+                            {
+                                call.MarsLogCall__c =logcall.removeEnd(';');
+                            }
                         }else 
                         {
                             Call.MARSActivitytype__c = 'TK';
+                            
+                            Dom.XMLNode callType = elementsList.getChildElement('CALL_TYPE', 'http://tempuri.org/MarsCall.xsd'); 
+                            Call.MarsCallType__c =parseNull(callType.getText());
+                            
+                            
+                            Dom.XMLNode callPriority = elementsList.getChildElement('CALL_PRIORITY', 'http://tempuri.org/MarsCall.xsd'); 
+                            Call.Priority =parseNull(callPriority.getText());
+                            
+                            Dom.XMLNode noteText= elementsList.getChildElement('NOTE_TEXT', 'http://tempuri.org/MarsCall.xsd'); 
+                            Call.Description=parseNull(noteText.getText());
+                            
+                            
                             Dom.XMLNode recurrence = elementsList.getChildElement('RECURRING_ID', 'http://tempuri.org/MarsCall.xsd'); 
                             Call.MarsReccurenceId__c =parseDecimal(recurrence.getText());
                             
@@ -651,7 +703,7 @@ public class MARSActivitySyncMessageParser
             if(doc.getRootElement().getChildElement('MEETING', null) != null || doc.getRootElement().getChildElement('FIRMEVENTS', null) != null){
                 objectType = 'Event';
             }
-            else if(doc.getRootElement().getChildElement('CALL', null) != null || doc.getRootElement().getChildElement('Call', null) != null){
+            else if(doc.getRootElement().getChildElement('CALL', null) != null || doc.getRootElement().getChildElement('TICKLER', null) != null){
                 objectType = 'Task';
             }else if(doc.getRootElement().getChildElement('RECURRENCE', null) != null)
             {
