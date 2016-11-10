@@ -29,7 +29,7 @@ public with sharing class MARSActivityDatabaseUtiltiy {
                                     
 
         if(events == null)
-            throw new MarsException('Events not found');
+            throw new MarsException('Event not found');
 
         return events;
 
@@ -47,15 +47,35 @@ public with sharing class MARSActivityDatabaseUtiltiy {
                                LastModifiedById,LastModifiedDate,OwnerId,Priority,RecurrenceActivityId,RecurrenceDayOfMonth,
                                RecurrenceDayOfWeekMask,RecurrenceEndDateOnly,RecurrenceInstance,RecurrenceInterval,RecurrenceMonthOfYear,
                                RecurrenceRegeneratedType,RecurrenceStartDateOnly,RecurrenceTimeZoneSidKey,RecurrenceType,ReminderDateTime,
-                               Status,Subject,SystemModstamp,TaskSubtype,WhatCount,WhatId,WhoCount,WhoId,MarsActivityId__c,MarsReccurenceId__c,
+                               Status,Subject,SystemModstamp,TaskSubtype,WhatId,WhoId,MarsActivityId__c,MarsReccurenceId__c,
                                MarsCallType__c,MarsLogCall__c FROM Task
                                     WHERE ID = : taskId];
                                     
 
         if(tasks == null)
-            throw new MarsException('Tasks not found');
+            throw new MarsException('Task not found');
 
         return tasks;
 
     }
+    
+    public static Note getNoteById(Id noteId) {
+
+        //throw exception if Rep Id is null
+        if(noteId== null)
+            throw new MarsException('Note Id is null');
+
+        //Fetch data from database   
+       Note notes= [SELECT Body,Id,IsPrivate,ParentId,Title,LastModifiedDate FROM Note WHERE ID = : noteId];
+       //ContentNote notes=[SELECT FileType,Id,TextPreview,Title,LastModifiedDate FROM ContentNote Where ID = : noteId];
+                                    
+
+        if(notes== null)
+            throw new MarsException('Note not found');
+
+        return notes;
+
+    }
+    
+    
 }

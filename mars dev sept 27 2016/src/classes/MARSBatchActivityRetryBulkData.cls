@@ -42,9 +42,6 @@ global class MARSBatchActivityRetryBulkData implements Database.Batchable<sObjec
                         if(batchData.MarsBatchId__c.contains('MEETING'))
                         {
                             service.DeleteMeeting(String.valueOf(batchData.MarsObjectId__c));
-                        }else if(batchData.MarsBatchId__c.contains('FIRMEVENT'))
-                        {
-                            service.DeleteFirmEvent(String.valueOf(batchData.MarsObjectId__c));
                         }else if(batchData.MarsBatchId__c.contains('TICKLER'))
                         {
                             service.DeleteTickler(String.valueOf(batchData.MarsObjectId__c));
@@ -54,7 +51,10 @@ global class MARSBatchActivityRetryBulkData implements Database.Batchable<sObjec
                         }else if(batchData.MarsBatchId__c.contains('CALL'))
                         {
                             service.DeleteCall(String.valueOf(batchData.MarsObjectId__c));
-                        }
+                        }/*else if(batchData.MarsBatchId__c.contains('FIRMEVENT'))
+                        {
+                            service.DeleteFirmEvent(String.valueOf(batchData.MarsObjectId__c));
+                        }*/
                     }else
                     {
                         if(batchData.OperationType__c.startsWith('EVENT'))
@@ -71,7 +71,8 @@ global class MARSBatchActivityRetryBulkData implements Database.Batchable<sObjec
                                 marsResponse = service.UpsertMeeting(meetingEnvelope);
                                 Event evt=(Event)MarsActivityUtility.updateObjByMARSResponse(event,marsResponse,true,'MEETING');
                                 lstEvent.add(evt);
-                            }else if(batchData.MarsBatchId__c.contains('FIRMEVENT'))
+                            }
+                            /*else if(batchData.MarsBatchId__c.contains('FIRMEVENT'))
                             {
                                 String meetingEnvelope = MarsActivityXMLEnvelopeBuilder.eventEnvelope(event,'FIRMEVENT');
                                 System.debug(meetingEnvelope);
@@ -80,7 +81,7 @@ global class MARSBatchActivityRetryBulkData implements Database.Batchable<sObjec
                                 Event evt=(Event)MarsActivityUtility.updateObjByMARSResponse(event,marsResponse,true,'FIRMEVENT');
                                 System.debug(evt);
                                 lstEvent.add(evt);
-                            }
+                            }*/
                         }
                         else if(batchData.OperationType__c.toUpperCase().startsWith('TASK'))
                         {

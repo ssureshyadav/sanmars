@@ -39,6 +39,7 @@ public with sharing class MarsErrorLogging {
             System.debug('\n Error In Error Log Object'+e.getMessage()+'--'+e.getStackTraceString());
         }
     }
+    
 
     //This method is to upsert records in bulk
     public static void createBatchData(list<MARSBatchDataStore__c> marsBulkData) {

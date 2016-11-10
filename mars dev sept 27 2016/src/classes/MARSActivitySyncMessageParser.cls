@@ -1,187 +1,5 @@
 public class MARSActivitySyncMessageParser
 {
-    public static Map<String, List<SObject>> parseFirmEvent(String firmEventXML)
-    {
-        Map<String, List<SObject>> mapFirmEvent = new Map<String, List<SObject>>();
-        List<Event> lstParseSuccess=new List<Event>();
-        List<EventRelation> lstParseEvtRelationSuccess=new List<EventRelation>();
-        List<Event> lstParseFailed=new List<Event>();
-        Event FirmEvent;
-        EventRelation eventRelation;
-        try{
-            
-            Dom.document doc = new Dom.document();
-            doc.load(firmEventXML);
-            
-            Dom.XMLNode root = doc.getRootElement().getChildElement('FIRMEVENT', 'http://tempuri.org/MarsFirmEvent.xsd');
-            if(root !=NULL)
-            {        
-                for(dom.XmlNode elementsList: doc.getRootElement().getChildElements())
-                {
-                    FirmEvent=new Event();
-                    try{          
-                        FirmEvent.Subject ='Firm Event';
-                        FirmEvent.IsAllDayEvent =true;
-                        FirmEvent.MARSActivitytype__c ='EV';
-                        
-                        Dom.XMLNode firmId = elementsList.getChildElement('FIRM_EXTERNAL_ID', 'http://tempuri.org/MarsFirmEvent.xsd'); 
-                        FirmEvent.whatId =parseNull(firmId.getText());
-                        
-                        Dom.XMLNode contactId = elementsList.getChildElement('REP_EXTERNAL_ID', 'http://tempuri.org/MarsFirmEvent.xsd'); 
-                        if(parseNull(contactId.getText()) != null)
-                        {
-                            //FirmEvent.WhoId =parseNull(contactId.getText());
-                        }
-                        
-                        Dom.XMLNode recurrence = elementsList.getChildElement('RECURRING_ID', 'http://tempuri.org/MarsFirmEvent.xsd'); 
-                        FirmEvent.MarsReccurenceId__c =parseDecimal(recurrence.getText());
-                            
-                        Dom.XMLNode recurrenceflag = elementsList.getChildElement('RECURRENCE_FLG', 'http://tempuri.org/MarsFirmEvent.xsd'); 
-                        if(parsenull(recurrenceflag.getText()) =='Y')
-                        {   
-                            if(recurrence.getText() == '')throw new MarsException('Recurrence id cannot be null');
-                            FirmEvent.IsRecurrence =true;
-
-                            Dom.XMLNode startTime = elementsList.getChildElement('START_TIME', 'http://tempuri.org/MarsFirmEvent.xsd'); 
-                            System.debug(parseDate(startTime.getText()));
-                            FirmEvent.RecurrenceStartDateTime =parseDate(startTime.getText());
-                            FirmEvent.ActivityDate =parseDate(startTime.getText());
-                            
-                            Dom.XMLNode externalRecurrenceId = elementsList.getChildElement('RECURRENCE_EXTERNAL_ID', 'http://tempuri.org/MarsFirmEvent.xsd');
-                            if(externalRecurrenceId.getText().length()>0)
-                            {
-                                FirmEvent.Id =parseNull(externalRecurrenceId.getText());
-                            }
-                            
-                            Dom.XMLNode recurrenceType = elementsList.getChildElement('RECURRENCE_TYPE', 'http://tempuri.org/MarsFirmEvent.xsd'); 
-                            FirmEvent.RecurrenceType =parseNull(recurrenceType.getText());
-                            
-                            System.debug(FirmEvent.RecurrenceType);
-                            
-                            if(!(FirmEvent.RecurrenceType =='RecursYearly' 
-                            || FirmEvent.RecurrenceType =='RecursYearlyNth' 
-                            || FirmEvent.RecurrenceType == 'RecursEveryWeekday'))
-                            {
-                                Dom.XMLNode interval = elementsList.getChildElement('INTERVAL', 'http://tempuri.org/MarsFirmEvent.xsd'); 
-                                FirmEvent.RecurrenceInterval =Integer.valueOf(interval.getText());
-                            }else{
-                                FirmEvent.RecurrenceInterval =null;
-                            }
-                            
-                            if(FirmEvent.RecurrenceType == 'RecursMonthlyNth' || FirmEvent.RecurrenceType =='RecursYearlyNth')
-                            {
-                                Dom.XMLNode instance = elementsList.getChildElement('INSTANCE', 'http://tempuri.org/MarsFirmEvent.xsd'); 
-                                FirmEvent.RecurrenceInstance =parseNull(instance.getText());
-                            }else{
-                                FirmEvent.RecurrenceInstance =null;
-                            }
-                            
-                            if(FirmEvent.RecurrenceType =='RecursWeekly' 
-                            || FirmEvent.RecurrenceType =='RecursMonthlyNth' 
-                            || FirmEvent.RecurrenceType =='RecursYearlyNth' 
-                            || FirmEvent.RecurrenceType == 'RecursEveryWeekday')
-                            {
-                                Dom.XMLNode dayOfWeekMask = elementsList.getChildElement('DAY_OF_WEEK_MASK', 'http://tempuri.org/MarsFirmEvent.xsd'); 
-                                FirmEvent.RecurrenceDayOfWeekMask =Integer.valueOf(dayOfWeekMask.getText());
-                            }else{
-                                FirmEvent.RecurrenceDayOfWeekMask =null;
-                            }
-                            
-                            if(FirmEvent.RecurrenceType =='RecursMonthly' 
-                            || FirmEvent.RecurrenceType =='RecursYearly')
-                            {
-                                Dom.XMLNode dayOfMonth = elementsList.getChildElement('DAY_OF_MONTH', 'http://tempuri.org/MarsFirmEvent.xsd'); 
-                                FirmEvent.RecurrenceDayOfMonth=dayOfMonth.getText() == '0'?null:Integer.valueOf(dayOfMonth.getText());
-                            }else{
-                                FirmEvent.RecurrenceDayOfMonth =null;
-                            }
-                            
-                            if(FirmEvent.RecurrenceType =='RecursYearlyNth' 
-                            || FirmEvent.RecurrenceType =='RecursYearly')
-                            {
-                                Dom.XMLNode monthOfYear = elementsList.getChildElement('MONTH_OF_YEAR', 'http://tempuri.org/MarsFirmEvent.xsd'); 
-                                FirmEvent.RecurrenceMonthOfYear=monthOfYear.getText();
-                                //FirmEvent.RecurrenceMonthOfYear ='January';
-                            }else{
-                                FirmEvent.RecurrenceMonthOfYear=null;
-                            }
-                            
-                            Dom.XMLNode endTime = elementsList.getChildElement('END_TIME', 'http://tempuri.org/MarsFirmEvent.xsd'); 
-                            FirmEvent.RecurrenceEndDateOnly =parseDate(endTime.getText());
-                            
-                        }else
-                        {
-                            Dom.XMLNode marsFirmEventid = elementsList.getChildElement('EVENT_ID', 'http://tempuri.org/MarsFirmEvent.xsd');
-                            if(parseNull(marsFirmEventid.getText()) == '')throw new MarsException('Event id cannot be null');
-                            FirmEvent.MarsActivityId__c=parseDecimal(marsFirmEventid.getText());
-                            
-                            Dom.XMLNode externalFirmEventId = elementsList.getChildElement('EXTERNAL_ID', 'http://tempuri.org/MarsFirmEvent.xsd');
-                            if(externalFirmEventId.getText().length()>0)
-                            {
-                                FirmEvent.Id =parseNull(externalFirmEventId.getText());
-                            }
-                            
-                            Dom.XMLNode startDate = elementsList.getChildElement('BEG_DT', 'http://tempuri.org/MarsFirmEvent.xsd'); 
-                            FirmEvent.StartDateTime =parseDateTime(startDate.getText());
-                            
-                            Dom.XMLNode endDate = elementsList.getChildElement('END_DT', 'http://tempuri.org/MarsFirmEvent.xsd'); 
-                            FirmEvent.EndDateTime =parseDateTime(endDate.getText());
-                            
-                            Dom.XMLNode marsUserActivity = elementsList.getChildElement('USERACTIVITY', 'http://tempuri.org/MarsFirmEvent.xsd');
-                            Dom.XMLNode reminder = marsUserActivity.getChildElement('ALARM_ON', 'http://tempuri.org/MarsFirmEvent.xsd'); 
-                            FirmEvent.IsReminderSet =parseNull(reminder.getText())=='Y'?true:false;
-                            
-                            if(FirmEvent.MarsReccurenceId__c != null)
-                            {
-                                if(FirmEvent.Id == null)
-                                {
-                                    Dom.XMLNode recurrenceSFDCId = elementsList.getChildElement('RECURRENCE_EXTERNAL_ID', 'http://tempuri.org/MarsFirmEvent.xsd'); 
-                                    //FirmEvent.RecurrenceActivityId = parseNull(recurrenceSFDCId.getText());
-                                    MARSActivityUtility.setRecurrenceId.add(recurrenceSFDCId.getText());
-                                }
-                            }
-                            
-                            for(dom.XmlNode childs:elementsList.getChildren())
-                            {
-                                eventRelation =new EventRelation();
-                                if(childs.getName() == 'USERACTIVITY')
-                                {
-                                    Dom.XMLNode marsUserExternalId = childs.getChildElement('SFDC_USR_NM', 'http://tempuri.org/MarsFirmEvent.xsd');   
-                                    System.debug(marsUserExternalId.getText());
-                                    eventRelation.RelationId =marsUserExternalId.getText();
-                                    eventRelation.IsInvitee =true;
-                                    eventRelation.Status =marsFirmEventid.getText();
-                                    lstParseEvtRelationSuccess.add(eventRelation);
-                                }
-                            }
-                        }
-                        lstParseSuccess.add(FirmEvent);
-                    }
-                    catch(exception e){
-                        Dom.XMLNode FirmEventId = elementsList.getChildElement('EVENT_ID', 'http://tempuri.org/MarsFirmEvent.xsd'); 
-                        Dom.XMLNode recurrence = elementsList.getChildElement('RECURRING_ID', 'http://tempuri.org/MarsFirmEvent.xsd'); 
-                        if(FirmEventId.getText() != null)
-                        {
-                            FirmEvent.MarsActivityId__c =parseDecimal(FirmEventId.getText());
-                        }else{
-                            FirmEvent.MARSReccurenceId__c =parseDecimal(recurrence.getText());
-                        }
-                        FirmEvent.Description=e.getMessage()+e.getStackTraceString();
-                        lstParseFailed.add(FirmEvent);
-                    }
-                } 
-                mapFirmEvent.put('Success',lstParseSuccess);   
-                mapFirmEvent.put('SuccessEventRelation',lstParseEvtRelationSuccess);
-                mapFirmEvent.put('Errors', lstParseFailed);
-            }
-        }
-        catch(Exception e){
-            System.debug('\n FirmEventXML:'+FirmEventXML);
-            System.debug(e.getMessage()+'-'+e.getStackTraceSTring());
-        }
-        return mapFirmEvent;
-    }
-    
     public static Map<String, List<Sobject>> parseMeeting(String meetingXML)
     {
         Map<String, List<Sobject>> mapMeeting = new Map<String, List<Sobject>>();
@@ -350,7 +168,7 @@ public class MARSActivitySyncMessageParser
                                     Dom.XMLNode marsRepexternalId = childs.getChildElement('EXTERNAL_ID', 'http://tempuri.org/MarsMeeting.xsd');    
                                     System.debug(marsRepexternalId.getText());
                                     eventRelation.RelationId =marsRepexternalId.getText();
-                                    eventRelation.IsInvitee =true;
+                                    //eventRelation.IsInvitee =true;
                                     eventRelation.Status =marsMeetingid.getText();
                                     lstParseEvtRelationSuccess.add(eventRelation);
                                 }
@@ -360,7 +178,7 @@ public class MARSActivitySyncMessageParser
                                     Dom.XMLNode marsUserExternalId = childs.getChildElement('SFDC_USR_NM', 'http://tempuri.org/MarsMeeting.xsd');   
                                     System.debug(marsUserExternalId.getText());
                                     eventRelation.RelationId =marsUserExternalId.getText();
-                                    eventRelation.IsInvitee =true;
+                                    //eventRelation.IsInvitee =true;
                                     eventRelation.Status =marsMeetingid.getText();
                                     lstParseEvtRelationSuccess.add(eventRelation);
                                 }
@@ -679,6 +497,67 @@ public class MARSActivitySyncMessageParser
             System.debug(e.getMessage()+'-'+e.getStackTraceSTring());
         }
         return mapEmail;
+    }
+    
+    public static Map<String, List<SObject>> parseNotes(String notesXML)
+    {
+        Map<String, List<Note>> mapNote = new Map<String, List<Note>>();
+        List<Note> lstParseSuccess=new List<Note>();
+        List<Note> lstParseFailed=new List<Note>();
+        Note note;
+        try{
+            
+            Dom.document doc = new Dom.document();
+            doc.load(notesXML);
+            
+            Dom.XMLNode root = doc.getRootElement().getChildElement('REPNOTES', 'http://tempuri.org/MarsRepNotes.xsd');
+            if(root !=NULL)
+            {        
+                for(dom.XmlNode elementsList: doc.getRootElement().getChildElements())
+                {
+                    note=new Note();
+                    try{          
+                        
+                        Dom.XMLNode repNote = elementsList.getChildElement('REP_NOTE', 'http://tempuri.org/MarsRepNotes.xsd'); 
+                        note.Body =parseNull(repNote.getText());
+                        
+                        Dom.XMLNode contactId = elementsList.getChildElement('EXTERNAL_REP_ID', 'http://tempuri.org/MarsRepNotes.xsd'); 
+                        if(parseNull(contactId.getText()) != null)
+                        {
+                            note.ParentId =parseNull(contactId.getText());
+                        }
+                        
+                        Dom.XMLNode sfdcNoteId = elementsList.getChildElement('EXTERNAL_ID', 'http://tempuri.org/MarsRepNotes.xsd'); 
+                        if(String.isNotEmpty(sfdcNoteId.getText()))
+                        {
+                            note.Id =parseNull(sfdcNoteId.getText());
+                        }
+                        
+                        Dom.XMLNode noteId = elementsList.getChildElement('NOTE_ID', 'http://tempuri.org/MarsRepNotes.xsd'); 
+                        if(noteId.getText() != null)
+                        {
+                            note.Title=noteId.getText();
+                        }
+                        lstParseSuccess.add(note);
+                    }
+                    catch(exception e){
+                        Dom.XMLNode noteId = elementsList.getChildElement('NOTE_ID', 'http://tempuri.org/MarsRepNotes.xsd'); 
+                        if(noteId.getText() != null)
+                        {
+                            note.Title=noteId.getText();
+                        }
+                        note.Body=e.getMessage()+e.getStackTraceString();
+                        lstParseFailed.add(note);
+                    }
+                } 
+                mapNote.put('Success',lstParseSuccess);   
+                mapNote.put('Errors', lstParseFailed);
+            }
+        }
+        catch(Exception e){
+            System.debug(e.getMessage()+'-'+e.getStackTraceSTring());
+        }
+        return mapNote;
     }
     
     public static Map<String, List<Sobject>> parseActivityDelete(String deleteXML)

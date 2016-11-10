@@ -95,6 +95,8 @@ private class Test_apiPhxaComMarsisMergemoveservice {
         //Method Calling       
         isSuccess = service.MoveRep('1001008010' , '1001008010' , 'N' , 'N' , '1001008010');
         
+        Mock_Controller.methodNumber = 45;
+        isSuccess = service.UpdateMoveMergeStatus('1001008010','Y','SUCCESS');
         //Test stop here
         Test.stopTest();       
     }

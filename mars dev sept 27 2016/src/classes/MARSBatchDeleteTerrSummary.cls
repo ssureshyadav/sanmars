@@ -1,17 +1,17 @@
 global class MARSBatchDeleteTerrSummary implements Database.Batchable<sObject>, Database.AllowsCallouts
 {    
+    private Date terrSummaryDate;
     //Calling Constructor
-    public MARSBatchDeleteTerrSummary()
-    {    }
+    public MARSBatchDeleteTerrSummary(Date terrSummaryDate)
+    {
+        this.terrSummaryDate =terrSummaryDate;
+    }
     
     //Start Method
     global Database.QueryLocator start(Database.BatchableContext BC)
     {
-        List<AggregateResult> assestDateResult=[SELECT Max(MarsUpdDt__c) max FROM MARSRepPeriodTerritorySummary__c where isdeleted =false];
-        System.debug(assestDateResult[0].get('max'));
-        Date MaxDate=Date.valueOf(assestDateResult[0].get('max'));
-        return Database.getQueryLocator([SELECT Id FROM MARSRepPeriodTerritorySummary__c WHERE MarsUpdDt__c <: MaxDate and isDeleted = false]);
-        //return Database.getQueryLocator([SELECT Id FROM MARSRepPeriodTerritorySummary__c where isDeleted = false]);
+        System.debug('Terr Summary Date'+terrSummaryDate);
+        return Database.getQueryLocator([SELECT Id FROM MARSRepPeriodTerritorySummary__c WHERE MarsUpdDt__c <: terrSummaryDate and isDeleted = false]);
     }
     
     //execute method

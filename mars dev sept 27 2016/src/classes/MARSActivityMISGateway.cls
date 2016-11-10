@@ -3,29 +3,30 @@ global class MARSActivityMISGateway{
     @future(callout=true)
     webservice static void SyncDeleteActivity(String marsactivityId,String objName) {
         try{        
-                
+            System.debug(marsactivityId);    
             apiPhxaComMarsisActivitiesservice.ActivitiesServiceSoap service=MarsActivityUtility.populatedAuthServiceForActivities();
-            if(objName =='FIRMEVENT')
+           /* if(objName =='FIRMEVENT')
             {
                 if(!service.DeleteFirmEvent(marsactivityId))
                 {
                     MarsActivityErrorLogging.createLog('MARSMISGateway' , 'Apex Class' , 'SyncDeleteActivity' , '', 'ACTIVITY_DELETE', null, null);
                 }
-            }
+            }*/
             
             if(objName =='RECURRENCE')
             {
                 if(!service.DeleteRecurrence(marsactivityId))
                 {
-                    MarsActivityErrorLogging.createLog('MARSMISGateway' , 'Apex Class' , 'SyncDeleteActivity' , '', 'ACTIVITY_DELETE', null, null);
+                    MarsActivityErrorLogging.createLog('MARSMISGateway' , 'Apex Class' , 'SyncDeleteActivity' , '', 'ACTIVITY_DELETE', marsactivityId, marsactivityId+''+objName);
                 }
             }
             
             if(objName =='MEETING')
             {
+                
                 if(!service.DeleteMeeting(marsactivityId))
                 {
-                    MarsActivityErrorLogging.createLog('MARSMISGateway' , 'Apex Class' , 'SyncDeleteActivity' , '', 'ACTIVITY_DELETE', null, null);
+                    MarsActivityErrorLogging.createLog('MARSMISGateway' , 'Apex Class' , 'SyncDeleteActivity' , '', 'ACTIVITY_DELETE', marsactivityId, marsactivityId+''+objName);
                 }
             }
             
@@ -33,7 +34,7 @@ global class MARSActivityMISGateway{
             {
                 if(!service.DeleteTickler(marsactivityId))
                 {
-                    MarsActivityErrorLogging.createLog('MARSMISGateway' , 'Apex Class' , 'SyncDeleteActivity' , '', 'ACTIVITY_DELETE', null, null);
+                    MarsActivityErrorLogging.createLog('MARSMISGateway' , 'Apex Class' , 'SyncDeleteActivity' , '', 'ACTIVITY_DELETE', marsactivityId, marsactivityId+''+objName);
                 }
             }
             
@@ -41,21 +42,21 @@ global class MARSActivityMISGateway{
             {
                 if(!service.DeleteCall(marsactivityId))
                 {
-                    MarsActivityErrorLogging.createLog('MARSMISGateway' , 'Apex Class' , 'SyncDeleteActivity' , '', 'ACTIVITY_DELETE', null, null);
+                    MarsActivityErrorLogging.createLog('MARSMISGateway' , 'Apex Class' , 'SyncDeleteActivity' , '', 'ACTIVITY_DELETE', marsactivityId, marsactivityId+''+objName);
                 }
             }
             
-            if(objName =='EMAIL')
+            /*if(objName =='EMAIL')
             {
-               /* if(!service.DeleteMeeting(marsactivityId))
+                if(!service.DeleteMeeting(marsactivityId))
                 {
                     MarsActivityErrorLogging.createLog('MARSMISGateway' , 'Apex Class' , 'SyncDeleteActivity' , '', 'ACTIVITY_DELETE', null, null);
-                }*/
-            }
+                }
+            }*/
             
         }catch(exception e){
-            System.debug(e.getMessage()+e.getStackTraceString());
-            MarsErrorLogging.createLog('MARSMISGateway' , 'Apex Class' , 'SyncDeleteActivity' , e.getMessage()+'--'+e.getStackTraceString(), 'ACTIVITY_DELETE', null, null);
+            System.debug('Error Message:'+e.getMessage()+e.getStackTraceString());
+            MarsActivityErrorLogging.createLog('MARSMISGateway' , 'Apex Class' , 'SyncDeleteActivity' , e.getMessage()+'--'+e.getStackTraceString(), 'ACTIVITY_DELETE', marsactivityId, marsactivityId+''+objName);
         }
     }
 
@@ -85,6 +86,21 @@ global class MARSActivityMISGateway{
         }
     }
     
+    @future(callout=true)
+    webservice static void SyncNote(ID noteId,String objName) {
+        try{        
+                
+            Note lstNote = MarsActivityDatabaseUtiltiy.getNoteById(noteId);
+            MARSActivityMISGateway.noteAtMARS(lstNote,objName);
+        }catch(exception e){
+            System.debug(e.getMessage()+e.getStackTraceString());
+            //Call createLog method for creating the log errors
+            MarsActivityErrorLogging.createLog('MARSMISGateway' , 'Apex Class' , 'SyncEvent' , e.getMessage()+'--'+e.getStackTraceString(), 'EVENT_UPSERT', noteId, noteId+objName);
+        }
+    }
+    
+    
+    
     private static void eventsAtMARS(Event lstevent,String objName) {
             
             String eventEnvelope = MarsActivityXMLEnvelopeBuilder.eventEnvelope(lstevent,objName);
@@ -95,10 +111,11 @@ global class MARSActivityMISGateway{
             {
                 marsResponse = service.UpsertMeeting(eventEnvelope);
 
-            }else if(objName =='FIRMEVENT')
+            }
+            /*else if(objName =='FIRMEVENT')
             {
                 marsResponse = service.UpsertFirmEvent(eventEnvelope);
-            }
+            }*/
             System.debug(marsResponse);
             Sobject lstresponse=MarsActivityUtility.updateObjByMARSResponse(lstevent,marsResponse,true,objName);
             MarsActivityUtility.BYPASS_ALL_TRIGGER =true;
@@ -126,5 +143,12 @@ global class MARSActivityMISGateway{
             MarsActivityUtility.BYPASS_ALL_TRIGGER =true;
             update lstresponse;
             MarsActivityUtility.BYPASS_ALL_TRIGGER=false;
+    }
+    
+    private static void noteAtMARS(Note lstNote,String objName) {
+            
+            String noteEnvelope = MarsActivityXMLEnvelopeBuilder.noteEnvelope(lstNote,objName);
+            apiPhxaComMarsisActivitiesservice.ActivitiesServiceSoap service=MarsActivityUtility.populatedAuthServiceForActivities();
+            Boolean marsResponse=service.UpsertRepNotes(noteEnvelope);
     }
 }

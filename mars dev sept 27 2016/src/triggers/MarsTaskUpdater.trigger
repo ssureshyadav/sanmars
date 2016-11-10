@@ -1,7 +1,7 @@
 trigger MarsTaskUpdater on Task (before insert,before update,after insert,after update,before delete,after delete) {
     
     MARSDefaults__c marsDefaults = MarsUtility.MARS_DEFAULTS;
-    if(MarsActivityUtility.BYPASS_ALL_TRIGGER || marsDefaults.IntegrationType__c == 0 || marsDefaults.MARSActivityPreference__c)
+    if(MarsActivityUtility.BYPASS_ALL_TRIGGER || marsDefaults.IntegrationType__c == 0 || !(marsDefaults.MARSActivityPreference__c))
     {
         return;
     }
@@ -10,9 +10,44 @@ trigger MarsTaskUpdater on Task (before insert,before update,after insert,after 
     
     if(Trigger.isBefore && !Trigger.isDelete)
     {
+        System.debug(Trigger.new);
         //Mars Records Validations
         for(Task tas:Trigger.new)
         {
+            if(Trigger.isInsert)
+            {
+                if(tas.MARSActivityId__c != null)
+                {
+                    tas.addError('Mars Activity Id Should not be specified');
+                }
+                
+                if(tas.MARSReccurenceId__c != null)
+                {
+                    tas.addError('Mars Reccurence Id Should not be specified');
+                }
+                if(tas.MARSActivityType__c != null)
+                {
+                    tas.addError('Mars Activity Type Should not be specified');
+                }
+            }else if(Trigger.isUpdate)
+            {
+                if(Trigger.oldMap.get(tas.Id).MARSActivityId__c != null && tas.MARSActivityId__c != Trigger.oldMap.get(tas.Id).MARSActivityId__c)
+                {
+                    tas.addError('Mars Activity Id Should not be Modified');
+                }
+                
+                if(Trigger.oldMap.get(tas.Id).MARSReccurenceId__c != null && tas.MARSReccurenceId__c != Trigger.oldMap.get(tas.Id).MARSReccurenceId__c)
+                {
+                    tas.addError('Mars Reccurence Id Should not be Modified');
+                }
+                
+                if(Trigger.oldMap.get(tas.Id).MARSActivityType__c != null && tas.MARSActivityType__c != Trigger.oldMap.get(tas.Id).MARSActivityType__c)
+                {
+                    tas.addError('Mars Activity Type Should not be Modified');
+                }
+            }
+            
+            
         }
     }
     
@@ -29,13 +64,10 @@ trigger MarsTaskUpdater on Task (before insert,before update,after insert,after 
                     {
                         if(Trigger.old.size() ==1)
                         {
-                        //Delete Call to mars
+                            //Delete Call to mars
                             if(tas.MarsActivityId__c != null)
                             {
                                 MarsActivityMISGateway.SyncDeleteActivity(String.valueOf(tas.MarsActivityId__c),'TICKLER');
-                            }else if(tas.MarsReccurenceId__c != null)
-                            {
-                                MarsActivityMISGateway.SyncDeleteActivity(String.valueOf(tas.MarsReccurenceId__c),'RECURRENCE');
                             }
                         }else{
                             MARSBatchDataStore__c MARSBatchDataStore = new MARSBatchDataStore__c(ApexComponentName__c = 'MarsTaskUpdater', ApexComponentType__c = 'Apex Trigger',
@@ -43,6 +75,9 @@ trigger MarsTaskUpdater on Task (before insert,before update,after insert,after 
                                                                        OperationType__c = 'TASK_DELETE', NoOfRetry__c=0,MarsBatchId__c =tas.Id+String.valueOf(tas.MarsActivityId__c == null?'RECURRENCE':'TICKLER'));
                              bulkLoad.add(MARSBatchDataStore);
                         }
+                    }else if(tas.MarsReccurenceId__c != null)
+                    {
+                        MarsActivityMISGateway.SyncDeleteActivity(String.valueOf(tas.MarsReccurenceId__c),'RECURRENCE');
                     }
                 }else if(tas.TaskSubtype =='Call' && tas.Status == 'Completed'){
                     MarsActivityMISGateway.SyncDeleteActivity(String.valueOf(tas.MarsActivityId__c),'CALL');
@@ -93,7 +128,7 @@ trigger MarsTaskUpdater on Task (before insert,before update,after insert,after 
                                                                    OperationType__c = 'TASK_UPSERT', NoOfRetry__c=0,MarsBatchId__c =tas.Id+'EMAIL');
                          bulkLoad.add(MARSBatchDataStore);
                     }
-                }else if(tas.TaskSubtype == 'Call')
+                }else if(tas.TaskSubtype == 'Call' && (tas.Status =='Completed' || tas.ActivityDate != null))
                 {
                     if(Trigger.new.size() ==1 && !tas.isRecurrence)
                     {

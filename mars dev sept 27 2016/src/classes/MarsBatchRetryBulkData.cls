@@ -9,7 +9,7 @@ global class MarsBatchRetryBulkData implements Database.Batchable<sObject>, Data
         DateTime currentDate = dateTime.Now();
         System.debug('\n Current Date'+currentDate);
         return Database.getQueryLocator([SELECT Id, SfdcAccountId__c, ApexComponentName__c, ApexComponentType__c, SfdcContactId__c, MethodName__c, NoOfRetry__c,OperationType__c,
-                                            NextRetryInterval__c,NextRetryAt__c
+                                            NextRetryInterval__c,NextRetryAt__c,MarsObjectId__c
                                             FROM MARSBatchDataStore__c 
                                             WHERE NextRetryAt__c <= :currentDate
                                             ORDER BY LastModifieddate]);
@@ -140,7 +140,7 @@ global class MarsBatchRetryBulkData implements Database.Batchable<sObject>, Data
                         System.debug('\n Error Success:'+errorSuccess);
                         contacts.add(objresponse);
                     }
-                    else
+                    else if(batchData.MarsObjectId__c != null)
                     {
                         errorSuccess.add(batchData);
                     }
@@ -259,11 +259,11 @@ global class MarsBatchRetryBulkData implements Database.Batchable<sObject>, Data
             duration=15;
         }
         
-        List<CronTrigger> lstCronTrigger=[SELECT Id,State, CronJobDetail.Id, CronJobDetail.Name, CronJobDetail.JobType FROM CronTrigger where CronJobDetail.Name = 'RetryBatchProcess'];
+        List<CronTrigger> lstCronTrigger=[SELECT Id,State, CronJobDetail.Id, CronJobDetail.Name, CronJobDetail.JobType FROM CronTrigger where CronJobDetail.Name = 'RetryActivitiesBatchProcess'];
         
         if(lstCronTrigger.IsEmpty() && DateTime.now().hour()>= 7)
         {
-            System.scheduleBatch(new MarsBatchRetryBulkData() , 'RetryBatchProcess' , duration, 10);
+            System.scheduleBatch(new MARSBatchActivityRetryBulkData() , 'RetryActivitiesBatchProcess' , duration, 1);
         }        
     }
 }

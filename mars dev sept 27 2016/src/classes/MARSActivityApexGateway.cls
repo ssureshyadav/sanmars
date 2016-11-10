@@ -9,7 +9,7 @@ global Class MARSActivityApexGateway{
     }
     
     //FirmEvent
-    webservice static List<ACK> SyncFirmEvent(String firmEventXML)
+    /*webservice static List<ACK> SyncFirmEvent(String firmEventXML)
     {
         System.debug(firmEventXML);
         List<ACK> lstResponse=new List<ACK>();           
@@ -140,7 +140,7 @@ global Class MARSActivityApexGateway{
         }
         System.debug('\n Response Output:'+lstResponse);
         return lstResponse;
-    }
+    }*/
     
     //Meeting
     webservice static List<ACK> SyncMeeting(String meetingXML)
@@ -158,10 +158,10 @@ global Class MARSActivityApexGateway{
                 { 
                     //Bypassing the trigger                        
                     MarsActivityUtility.BYPASS_ALL_TRIGGER=true;
-                    if(!MARSActivityUtility.mapSFDCActivityId.isEmpty())
+                   /* if(!MARSActivityUtility.mapSFDCActivityId.isEmpty())
                     {
                         MARSActivityUtility.updateRecurrence();
-                    }
+                    }*/
                     if(!MARSActivityUtility.setRecurrenceId.isEmpty())
                     {
                         Map<Date,Id> mapactivityDate=new Map<Date,Id>();
@@ -295,10 +295,10 @@ global Class MARSActivityApexGateway{
                 { 
                     //Bypassing the trigger                        
                     MarsActivityUtility.BYPASS_ALL_TRIGGER=true;
-                    if(!MARSActivityUtility.mapSFDCActivityId.isEmpty())
+                    /*if(!MARSActivityUtility.mapSFDCActivityId.isEmpty())
                     {
                         MARSActivityUtility.updateRecurrence();
-                    }
+                    }*/
                     if(!MARSActivityUtility.setRecurrenceId.isEmpty())
                     {
                         Map<Date,Id> mapactivityDate=new Map<Date,Id>();
@@ -468,6 +468,88 @@ global Class MARSActivityApexGateway{
                     objSFDCResponse.MarsObjectId='<![CDATA['+String.valueOf(errorEmail[i].MarsActivityId__c)+']]>';
                     objSFDCResponse.Result=false;
                     objSFDCResponse.ErrorMessage=errorEmail[i].Description;
+                    lstResponse.add(objSFDCResponse);
+                    }
+                }
+            }
+        }
+        catch(exception e)
+        {
+            ACK objSFDCResponse=new ACK();
+            objSFDCResponse.Result=false;
+            objSFDCResponse.ErrorMessage=e.getStackTraceString()+'--'+e.getmessage();    
+            lstResponse.add(objSFDCResponse);
+            // Creating the Errorlogging record.
+        }
+        System.debug('\n Response Output:'+lstResponse);
+        return lstResponse;
+    }
+    
+    //Rep notes
+    webservice static List<ACK> SyncRepNotes(String RepNotesXML)
+    {
+        System.debug(RepNotesXML);
+        List<ACK> lstResponse=new List<ACK>();           
+        try
+        {
+            Map<String, List<Note>> marsRepNotes=MarsActivitySyncMessageParser.parseNotes(RepNotesXML);
+            if(marsRepNotes.containsKey('Success'))
+            {
+                List<Note> lstNote=marsRepNotes.get('Success');
+                if(!lstNote.IsEmpty())
+                { 
+                    //Bypassing the trigger                        
+                    MarsActivityUtility.BYPASS_ALL_TRIGGER=true;
+                    List<Database.UpsertResult> result= Database.upsert(lstNote, false);
+    
+                    //Enable the trigger                        
+                    MarsActivityUtility.BYPASS_ALL_TRIGGER=false;                     
+                    // looping the upsertcontacts results to get the salesforce ids and mars rep ids.
+                    for(Integer i=0;i<result.size();i++)
+                    {
+                        ACK objSFDCResponse=new ACK();
+                        if(result[i].isSuccess())
+                        {
+                            // Assigning Salesforce ids to SFDCObjectId
+                            objSFDCResponse.SFDCObjectId=result[i].Id;
+                            // Assigning rep ids(EXTERNAL_ID__c in salesforce) to MarsObjectId
+                            if(lstNote[i].Title != null)
+                            {
+                                objSFDCResponse.MarsObjectId='<![CDATA['+lstNote[i].Title+']]>';
+                            }
+                            objSFDCResponse.Result=result[i].isSuccess();
+                        }
+                        else
+                        {
+                            objSFDCResponse.SFDCObjectId='';
+                          
+                            // Assigning rep ids(EXERNAL_ID__c in salesforce) to MarsObjectId
+                            if(lstNote[i].Title != null)
+                            {
+                                objSFDCResponse.MarsObjectId='<![CDATA['+lstNote[i].Title+']]>';
+                            }
+                            objSFDCResponse.Result=result[i].isSuccess();
+                            objSFDCResponse.ErrorMessage=result[i].errors[0].message+result[i].errors[0].fields;
+                        }
+                        // Adding the upsertresult object to list
+                        lstResponse.add(objSFDCResponse);
+                    }
+                }
+            }
+            if(marsRepNotes.containsKey('Errors'))
+            {
+                List<Note> errorNote=marsRepNotes.get('Errors');
+                //if(errorProducts.size()>0)
+                if(!errorNote.IsEmpty())
+                {
+                    for(integer i=0;i<errorNote.size();i++){
+                    ACK objSFDCResponse=new ACK();
+                    if(errorNote[i].Title != null)
+                    {
+                        objSFDCResponse.MarsObjectId='<![CDATA['+errorNote[i].Title+']]>';
+                    }
+                    objSFDCResponse.Result=false;
+                    objSFDCResponse.ErrorMessage=errorNote[i].body;
                     lstResponse.add(objSFDCResponse);
                     }
                 }

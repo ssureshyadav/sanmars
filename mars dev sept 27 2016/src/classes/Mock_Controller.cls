@@ -259,7 +259,15 @@ global with sharing class Mock_Controller implements webServiceMock{
             response_x.MoveRepResult = true;
                                     
                 response.put('response_x', response_x);
-        } 
+        } else if(methodNumber == 45) {
+            
+            apiPhxaComMarsisMergemoveservice.UpdateMoveMergeStatusResponse_element response_x = new apiPhxaComMarsisMergemoveservice.UpdateMoveMergeStatusResponse_element();
+            response_x.UpdateMoveMergeStatusResult= true;
+            
+            response.put('response_x', response_x);
+        }
+        
+        
 
         }
 }

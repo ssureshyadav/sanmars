@@ -22,7 +22,7 @@ public class MARSActivityUtility {
             }
     }
     
-    public static void updateRecurrence()
+  /*  public static void updateRecurrence()
     {
         List<Event> lstupdReccurEvent=new List<Event>();
         for(Event evt:[Select Id,MarsReccurenceId__c from Event Where MarsReccurenceId__c IN : MARSActivityUtility.mapSFDCActivityId.keySet() and IsRecurrence =true])
@@ -38,7 +38,7 @@ public class MARSActivityUtility {
             lstupdReccurEvent.add(evnt);
         }
         update lstupdReccurEvent;
-    }
+    }*/
      
      public static apiPhxaComMarsisActivitiesservice.ActivitiesServiceSoap populatedAuthServiceForActivities() {
         
@@ -98,7 +98,7 @@ public class MARSActivityUtility {
                         
                         Dom.XMLNode marsactivityType = elementsList.getChildElement('ACT_TYPE', 'http://tempuri.org/MarsCall.xsd');
                         responseTask.MARSActivitytype__c =marsactivityType.getText();
-                        if(responseTask.MARSActivitytype__c == null)
+                        if(responseTask.MARSActivitytype__c != 'CL')
                         {
                            responseTask.MARSActivitytype__c ='TK'; 
                         }
@@ -142,7 +142,7 @@ public class MARSActivityUtility {
                     }
                     responseEvent.MARSActivitytype__c='MT';
                 }
-                if(Entity == 'FirmEvent')
+               /* if(Entity == 'FirmEvent')
                 {
                     //Dom.XMLNode externalIdField =elementsList.getChildElement('EXTERNAL_ID' , doc.getRootElement().getNamespace());
                     //Dom.XMLNode externalRecurrenceId =elementsList.getChildElement('EXTERNAL_ID' , doc.getRootElement().getNamespace());
@@ -159,7 +159,7 @@ public class MARSActivityUtility {
                         responseEvent.MarsReccurenceId__c=Decimal.valueOf(recurrenceId.getText());
                     }    
                     responseEvent.MARSActivitytype__c='EV';
-                }
+                }*/
             }
 
             return responseEvent;

@@ -197,6 +197,7 @@ private class Test_MARSBatchRetry {
         periodSummary.MarsPdayRed__c=0;   
         periodSummary.MarsPmonthAssets__c=0;  
         periodSummary.MarsPmonthavgAssets__c=0;   
+        periodSummary.MARSUpdDt__c  =DateTime.now()-1;
         //periodSummary.SfdcFirmId__c='0019000000nRm4wAAC';   
         periodSummary.SfdcOfficeId__c=firm.Id; 
         periodSummary.SfdcRepId__c=rep.Id;
@@ -221,6 +222,7 @@ private class Test_MARSBatchRetry {
         pterrSummary.SfdcOfficeId__c=firm.Id; 
         pterrSummary.SfdcRepId__c=rep.Id;
         pterrSummary.MARSTerrCd__c='A012';
+        pterrSummary.MARSUpdDt__c  =DateTime.now()-1;
         
         MarsRepTerritory__c repTerr=new MarsRepTerritory__c();
         repTerr.MarsRepId__c=4555777.0; 

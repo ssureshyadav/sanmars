@@ -1,17 +1,50 @@
 trigger MARSEventUpdater on Event (before insert,before update,after insert,after update,before delete,after delete) {
     
     MARSDefaults__c marsDefaults = MarsUtility.MARS_DEFAULTS;
-    if(MarsActivityUtility.BYPASS_ALL_TRIGGER || marsDefaults.IntegrationType__c == 0 || marsDefaults.MARSActivityPreference__c)
+    if(MarsActivityUtility.BYPASS_ALL_TRIGGER || marsDefaults.IntegrationType__c == 0 || (!marsDefaults.MARSActivityPreference__c))
     {
         return;
     }
     
     List<MARSBatchDataStore__c> bulkLoad=new List<MARSBatchDataStore__c>();
-    if(Trigger.isBefore && !Trigger.isDelete)
+     if(Trigger.isBefore && !Trigger.isDelete)
     {
+        System.debug(Trigger.new);
+        //Mars Records Validations
         for(Event evt:Trigger.new)
         {
-            //validations
+            if(Trigger.isInsert)
+            {
+                if(evt.MARSActivityId__c != null && evt.RecurrenceActivityId == null)
+                {
+                    evt.addError('Mars Activity Id Should not be specified');
+                }
+                
+                if(evt.MARSReccurenceId__c != null && evt.RecurrenceActivityId == null)
+                {
+                    evt.addError('Mars Reccurence Id Should not be specified');
+                }
+                if(evt.MARSActivityType__c != null && evt.RecurrenceActivityId == null)
+                {
+                    evt.addError('Mars Activity Type Should not be specified');
+                }
+            }else if(Trigger.isUpdate)
+            {
+                if(Trigger.oldMap.get(evt.Id).MARSActivityId__c != null && evt.MARSActivityId__c != Trigger.oldMap.get(evt.Id).MARSActivityId__c)
+                {
+                    evt.addError('Mars Activity Id Should not be Modified');
+                }
+                
+                if(Trigger.oldMap.get(evt.Id).MARSReccurenceId__c != null && evt.MARSReccurenceId__c != Trigger.oldMap.get(evt.Id).MARSReccurenceId__c)
+                {
+                    evt.addError('Mars Reccurence Id Should not be Modified');
+                }
+                
+                if(Trigger.oldMap.get(evt.Id).MARSActivityType__c != null && evt.MARSActivityType__c != Trigger.oldMap.get(evt.Id).MARSActivityType__c)
+                {
+                    evt.addError('Mars Activity Type Should not be Modified');
+                }
+            }
         }
     }
     
