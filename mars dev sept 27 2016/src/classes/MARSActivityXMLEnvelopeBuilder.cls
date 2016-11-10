@@ -13,9 +13,9 @@ public with sharing class MARSActivityXMLEnvelopeBuilder {
     public static String eventEnvelope(Event evt,String objName) {
         
         Set<Id> setWhoIds=new Set<Id>();
-        Set<Id> setWhatIds=new Set<Id>();
+        //Set<Id> setWhatIds=new Set<Id>();
         Map<Id,Contact> mapContacts;
-        Map<Id,Account> mapFirmSummary;
+        //Map<Id,Account> mapFirmSummary;
         
         if(evt.WhoId != null)
         {
@@ -24,7 +24,7 @@ public with sharing class MARSActivityXMLEnvelopeBuilder {
         
         List<EventRelation> lstevtRelation=[SELECT EventId,Id,RelationId,Status FROM EventRelation Where EventId = : evt.Id];
         String integrationUser = 'MARSINTG';
-        List<String> lstAttendees=new List<String>();
+        //List<String> lstAttendees=new List<String>();
         String attendees ='';
         
         if(!lstevtRelation.isEmpty())
@@ -32,20 +32,21 @@ public with sharing class MARSActivityXMLEnvelopeBuilder {
             for(EventRelation rel:lstevtRelation)
             {
                 String objectName =String.valueOf(rel.RelationId.getSObjectType());
-                lstAttendees.add(rel.RelationId);
-                if(objectName == 'marssfs__MARSFirmSummary__c' || objectName == 'Account')
+                //lstAttendees.add(rel.RelationId);
+               /* if(objectName == 'marssfs__MARSFirmSummary__c' || objectName == 'Account')
                 {
                     setWhatIds.add(rel.RelationId);    
-                }else if(objectName == 'Contact')
+                }else */
+                if(objectName == 'Contact')
                 {
                     setWhoIds.add(rel.RelationId);    
                 }
             }
-            if(!setWhatIds.isEmpty())
+            /*if(!setWhatIds.isEmpty())
             {
                 System.debug(setWhatIds);
                 mapFirmSummary=new Map<Id,Account>([SELECT MarsFirmId__c FROM Account Where (Id IN : setWhatIds OR SFDCFirmSumId__c IN : setWhatIds) AND ParentId =null ]);
-            }    
+            }*/    
             if(!setWhoIds.isEmpty())
             {
                 mapContacts =new Map<Id,Contact>([Select Id,MarsRepId__c from Contact Where MarsRepId__c != null And Id IN : setWhoIds]);
@@ -68,7 +69,7 @@ public with sharing class MARSActivityXMLEnvelopeBuilder {
             attendees +='<USERATTENDEE>'+ evt.OwnerId+'</USERATTENDEE>';
         }
         
-        
+        mapContacts =new Map<Id,Contact>([Select Id,MarsRepId__c from Contact Where MarsRepId__c != null And Id = : evt.WhoId]);
         
         String eventEnvelopeString ='<Mars'+objName+'DataSet xmlns="http://tempuri.org/Mars'+objName+'.xsd"><'+objName.toUpperCase()+'S>';
         
@@ -79,10 +80,11 @@ public with sharing class MARSActivityXMLEnvelopeBuilder {
             {
                 recuringInfo +='<RECURRENCEID>'+parseNull(evt.MarsReccurenceId__c)+'</RECURRENCEID>';
                 if(evt.IsRecurrence){
+                
                         recuringInfo +='<RECURRENCEDAYOFMONTH>'+parseNull(evt.recurrencedayofmonth)+'</RECURRENCEDAYOFMONTH>'
                                 +'<ISRECURRENCE>'+evt.Isrecurrence+'</ISRECURRENCE>'
                                 +'<RECURRENCEDAYOFWEEKMASK>'+parseNull(evt.recurrencedayofweekmask)+'</RECURRENCEDAYOFWEEKMASK>'
-                                +'<RECURRENCEENDDATEONLY>'+parseDate(evt.recurrenceenddateonly)+'</RECURRENCEENDDATEONLY>'
+                                +'<RECURRENCEENDDATEONLY>'+parseDateTime(DateTime.newInstance(evt.recurrenceenddateonly,evt.recurrencestartdatetime.Time().addMinutes(evt.DurationInMinutes)))+'</RECURRENCEENDDATEONLY>'
                                 +'<RECURRENCEINSTANCE>'+parseNull(evt.recurrenceinstance)+'</RECURRENCEINSTANCE>'
                                 +'<RECURRENCEINTERVAL>'+parseNull(evt.recurrenceinterval)+'</RECURRENCEINTERVAL>'
                                 +'<RECURRENCEMONTHOFYEAR>'+parseNull(evt.recurrencemonthofyear)+'</RECURRENCEMONTHOFYEAR>'
@@ -109,8 +111,8 @@ public with sharing class MARSActivityXMLEnvelopeBuilder {
                                     +'<MTG_ZIP></MTG_ZIP>'
                                     +'<NOTE_TEXT>'+parseNull(evt.Description)+'</NOTE_TEXT>'
                                     +'<COUNTRY_CD></COUNTRY_CD>'
-                                    +'<BEG_DT>'+evt.StartDateTime+'</BEG_DT>'
-                                    +'<END_DT>'+evt.EndDateTime+'</END_DT>'
+                                    +'<BEG_DT>'+parseDateTime(evt.StartDateTime)+'</BEG_DT>'
+                                    +'<END_DT>'+parseDateTime(evt.EndDateTime)+'</END_DT>'
                                     +'<STAT_CD>S</STAT_CD>'
                                     +'<ALARM_ON>'+(evt.IsReminderSet?'Y':'N')+'</ALARM_ON>'
                                     +'<ALARM_NOTICE></ALARM_NOTICE>'
@@ -352,6 +354,29 @@ public with sharing class MARSActivityXMLEnvelopeBuilder {
         System.debug(taskEnvelopeString);
         return taskEnvelopeString;                                
     }
+    
+    public static String noteEnvelope(Note note,String objName) {
+        Map<Id,Contact> mapContacts;
+
+        String integrationUser = 'MARSINTG';
+        
+        mapContacts =new Map<Id,Contact>([Select Id,MarsRepId__c from Contact Where MarsRepId__c != null and Id = : note.ParentId]);
+        String noteEnvelopeString ='<MarsRepNotesDataSet xmlns="http://tempuri.org/MarsRepNotes.xsd"><REPNOTES>'
+                              +'<REP_ID>'+parseNull(mapContacts.get(note.ParentId).MarsRepId__c)+'</REP_ID>'
+                              +'<REP_NOTE>'+parseNull(note.Body)+'</REP_NOTE>'
+                              +'<REP_NOTE_ID>'+parseNull(note.Title)+'</REP_NOTE_ID>'
+                              +'<NOTE_BY>'+integrationUser+'</NOTE_BY>'
+                              +'<EXTERNAL_ID>'+parseNull(note.Id)+'</EXTERNAL_ID>'
+                              +'<UPD_DT>'+parseDateTime(note.LastModifiedDate)+'</UPD_DT>'
+                              +'<UPD_USR>'+integrationUser+'</UPD_USR>'
+                              +'<SYSTEM_FLG></SYSTEM_FLG>'
+                              +'</REPNOTES></MarsRepNotesDataSet>';
+                              
+        System.debug(noteEnvelopeString);                      
+        return noteEnvelopeString;
+        
+        return null;
+    }
 
     //Check for Null and if yes, then return blank
     public static String parseNull(String value) {
@@ -394,6 +419,6 @@ public with sharing class MARSActivityXMLEnvelopeBuilder {
 
         //return original value
         System.debug('\n\n Exact Value: '+value.format('MM/dd/yyyy h:mm:ss a'));
-        return value.format('MM/dd/yyyy h:mm:ss a');
+        return value.format('MM/dd/yyyy h:mm:ss a',UserInfo.getTimeZone().getID());
     }
 }
