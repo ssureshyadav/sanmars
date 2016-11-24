@@ -139,7 +139,7 @@ private class Test_MARSMISGateway {
         MarsUtility.BYPASS_ALL_TRIGGER=false;
         
         Account office=new Account();
-        office.Name='Test Office in Testoffice Controller';
+        office.Name='Richmond Office MARSMISGateway Cls';
         office.MarsFirmNm__c='Test Firm In TestFirm Controller';
         office.ParentId=firm.Id;
         //office.MarsOfficeId__c=1111111;
@@ -157,7 +157,7 @@ private class Test_MARSMISGateway {
         lstAccount.add(office);
         
         Account office1=new Account();
-        office1.Name='Test Office in TestFirm Controller';
+        office1.Name='Test Office MARSMISGateway Cls';
         office1.MarsFirmNm__c='Test office In Testoffice Controller';
         office1.ParentId=firm.Id;
         //office1.MarsOfficeId__c=1111112;

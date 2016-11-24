@@ -23,9 +23,12 @@ public with sharing class MARSActivityDatabaseUtiltiy {
                                    IsChild,IsDeleted,IsGroupEvent,IsPrivate,IsRecurrence,IsReminderSet,LastModifiedById,
                                    LastModifiedDate,Location,OwnerId,RecurrenceActivityId,RecurrenceDayOfMonth,RecurrenceDayOfWeekMask,
                                    RecurrenceEndDateOnly,RecurrenceInstance,RecurrenceInterval,RecurrenceMonthOfYear,
-                                   RecurrenceStartDateTime,RecurrenceTimeZoneSidKey,RecurrenceType,ReminderDateTime,
-                                   ShowAs,StartDateTime,Subject,SystemModstamp,WhatId,WhoId,MarsActivityId__c,MarsReccurenceId__c,MarsMeetingType__c FROM Event
-                                    WHERE ID = : eventId];
+                                   RecurrenceStartDateTime,RecurrenceTimeZoneSidKey,RecurrenceType,ReminderDateTime,MARSChkUpdDesc__c,
+                                   ShowAs,StartDateTime,Subject,SystemModstamp,WhatId,WhoId,MarsActivityId__c,MarsReccurenceId__c,MarsMeetingType__c 
+                       FROM 
+                           Event
+                       WHERE 
+                           ID = : eventId];
                                     
 
         if(events == null)
@@ -47,9 +50,12 @@ public with sharing class MARSActivityDatabaseUtiltiy {
                                LastModifiedById,LastModifiedDate,OwnerId,Priority,RecurrenceActivityId,RecurrenceDayOfMonth,
                                RecurrenceDayOfWeekMask,RecurrenceEndDateOnly,RecurrenceInstance,RecurrenceInterval,RecurrenceMonthOfYear,
                                RecurrenceRegeneratedType,RecurrenceStartDateOnly,RecurrenceTimeZoneSidKey,RecurrenceType,ReminderDateTime,
-                               Status,Subject,SystemModstamp,TaskSubtype,WhatId,WhoId,MarsActivityId__c,MarsReccurenceId__c,
-                               MarsCallType__c,MarsLogCall__c FROM Task
-                                    WHERE ID = : taskId];
+                               Status,Subject,SystemModstamp,TaskSubtype,WhatId,WhoId,MarsActivityId__c,MarsReccurenceId__c,MARSChkUpdDesc__c,
+                               MarsCallType__c,MarsLogCall__c 
+                   FROM 
+                       Task
+                   WHERE 
+                       ID = : taskId];
                                     
 
         if(tasks == null)
@@ -59,15 +65,15 @@ public with sharing class MARSActivityDatabaseUtiltiy {
 
     }
     
-    public static Note getNoteById(Id noteId) {
+    public static ContentNote getNoteById(Id noteId) {
 
         //throw exception if Rep Id is null
         if(noteId== null)
             throw new MarsException('Note Id is null');
 
         //Fetch data from database   
-       Note notes= [SELECT Body,Id,IsPrivate,ParentId,Title,LastModifiedDate FROM Note WHERE ID = : noteId];
-       //ContentNote notes=[SELECT FileType,Id,TextPreview,Title,LastModifiedDate FROM ContentNote Where ID = : noteId];
+       //Note notes= [SELECT Body,Id,IsPrivate,ParentId,Title,LastModifiedDate FROM Note WHERE ID = : noteId];
+       ContentNote notes=[SELECT Content,FileType,Id,TextPreview,Title,LastModifiedDate FROM ContentNote Where ID = : noteId];
                                     
 
         if(notes== null)

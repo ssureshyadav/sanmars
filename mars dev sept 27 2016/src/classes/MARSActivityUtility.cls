@@ -113,6 +113,7 @@ public class MARSActivityUtility {
                         
                         responseTask.MARSActivitytype__c ='EM';
                     }
+                    responseTask.MARSChkUpdDesc__c =false;
                 }
             return responseTask;
         } else if(Entity == 'Meeting' || Entity == 'FirmEvent')
@@ -141,6 +142,7 @@ public class MARSActivityUtility {
                         }
                     }
                     responseEvent.MARSActivitytype__c='MT';
+                    responseEvent.MARSChkUpdDesc__c =false;
                 }
                /* if(Entity == 'FirmEvent')
                 {

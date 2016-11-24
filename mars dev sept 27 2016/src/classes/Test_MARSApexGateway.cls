@@ -101,7 +101,7 @@ private class Test_MARSApexGateway {
         
        
         Account office=new Account();
-        office.Name='Test Office';
+        office.Name='Branch Office';
         //office.MarsOfficeId__c=123456;
         office.ParentId=firm.Id;
         office.RecordTypeId=MarsUtility.AccountRecordType;
@@ -121,7 +121,7 @@ private class Test_MARSApexGateway {
 
         
         Account office1=new Account();
-        office1.Name='Test Office';
+        office1.Name='Br Office';
         office1.MarsOfficeId__c=123455;
         office1.ParentId=firm1.Id;
         office1.RecordTypeId=MarsUtility.AccountRecordType;
@@ -141,7 +141,7 @@ private class Test_MARSApexGateway {
         MarsUtility.BYPASS_ALL_TRIGGER=false;
         
         Account office2=new Account();
-        office2.Name='Test Office';
+        office2.Name='Virginia Br Office';
         office2.MarsOfficeId__c=123485;
         office2.ParentId=firm1.Id;
         office2.RecordTypeId=MarsUtility.AccountRecordType;
@@ -168,7 +168,7 @@ private class Test_MARSApexGateway {
         cont.AccountId=office.Id;
         cont.RecordTypeId=MarsUtility.ContactRecordType;
         cont.Birthdate=Date.valueOf('1966-10-24');
-        cont.LastName='In Test_MarsApexGateway Class';
+        cont.LastName='Test_MarsApexGateway Class';
         cont.MailingStreet='8014 Midlothian Tpke';
         cont.MailingState='California';
         cont.MailingStateCode='CA';
@@ -191,7 +191,7 @@ private class Test_MARSApexGateway {
         rep.AccountId=office.Id;
         rep.RecordTypeId=MarsUtility.ContactRecordType;
         rep.Birthdate=Date.valueOf('1966-10-24');
-        rep.LastName='In Test_MarsApexGateway Class';
+        rep.LastName='In MarsApexGateway Class';
         rep.MailingStreet='8014 Midlothian Tpke';
         rep.MailingState='Virginia';
         rep.MailingCity='Richmond';

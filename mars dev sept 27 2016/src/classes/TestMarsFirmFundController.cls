@@ -52,7 +52,7 @@ private class TestMarsFirmFundController {
         insert firmsummary;
         
         Account office=new Account();
-        office.Name='Test Office in TestFirm Controller';
+        office.Name='Branch Office';
         office.MarsFirmNm__c='Test Firm In TestFirm Controller';
         office.MarsFirmId__c=123456;
         office.MarsOfficeId__c=12344444;

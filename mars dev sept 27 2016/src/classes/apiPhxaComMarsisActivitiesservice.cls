@@ -19,6 +19,12 @@ public class apiPhxaComMarsisActivitiesservice {
         private String[] apex_schema_type_info = new String[]{'http://api.phxa.com/MARSIS/ActivitiesService','true','false'};
         private String[] field_order_type_info = new String[]{'UpsertEmailResult'};
     }
+    public class DeleteEmailResponse_element {
+        public Boolean DeleteEmailResult;
+        private String[] DeleteEmailResult_type_info = new String[]{'DeleteEmailResult','http://api.phxa.com/MARSIS/ActivitiesService',null,'1','1','false'};
+        private String[] apex_schema_type_info = new String[]{'http://api.phxa.com/MARSIS/ActivitiesService','true','false'};
+        private String[] field_order_type_info = new String[]{'DeleteEmailResult'};
+    }
     public class GetCallByActivityID_element {
         public String activityID;
         public String recurrenceId;
@@ -165,6 +171,12 @@ public class apiPhxaComMarsisActivitiesservice {
         private String[] apex_schema_type_info = new String[]{'http://api.phxa.com/MARSIS/ActivitiesService','true','false'};
         private String[] field_order_type_info = new String[]{'DeleteMeetingResult'};
     }
+    public class DeleteEmail_element {
+        public String activityId;
+        private String[] activityId_type_info = new String[]{'activityId','http://api.phxa.com/MARSIS/ActivitiesService',null,'0','1','false'};
+        private String[] apex_schema_type_info = new String[]{'http://api.phxa.com/MARSIS/ActivitiesService','true','false'};
+        private String[] field_order_type_info = new String[]{'activityId'};
+    }
     public class GetMeetingByActivityID_element {
         public String activityID;
         public String recurrenceId;
@@ -210,7 +222,7 @@ public class apiPhxaComMarsisActivitiesservice {
         private String[] field_order_type_info = new String[]{'activityId'};
     }
     public class ActivitiesServiceSoap {
-        //public String endpoint_x = 'https://sfsdc8idev.phxa.com/mis/ActivitiesService.asmx';
+        //public String endpoint_x = 'http://192.168.169.103/MIS/ActivitiesService.asmx';
         
         MARSDefaults__c marsDefaults = MarsUtility.MARS_DEFAULTS;
         public String endpoint_x = marsDefaults.MARSEndpointUrl__c +  '/ActivitiesService.asmx';
@@ -500,6 +512,27 @@ public class apiPhxaComMarsisActivitiesservice {
             );
             response_x = response_map_x.get('response_x');
             return response_x.DeleteRecurrenceResult;
+        }
+        public Boolean DeleteEmail(String activityId) {
+            apiPhxaComMarsisActivitiesservice.DeleteEmail_element request_x = new apiPhxaComMarsisActivitiesservice.DeleteEmail_element();
+            request_x.activityId = activityId;
+            apiPhxaComMarsisActivitiesservice.DeleteEmailResponse_element response_x;
+            Map<String, apiPhxaComMarsisActivitiesservice.DeleteEmailResponse_element> response_map_x = new Map<String, apiPhxaComMarsisActivitiesservice.DeleteEmailResponse_element>();
+            response_map_x.put('response_x', response_x);
+            WebServiceCallout.invoke(
+              this,
+              request_x,
+              response_map_x,
+              new String[]{endpoint_x,
+              'http://api.phxa.com/MARSIS/ActivitiesService/DeleteEmail',
+              'http://api.phxa.com/MARSIS/ActivitiesService',
+              'DeleteEmail',
+              'http://api.phxa.com/MARSIS/ActivitiesService',
+              'DeleteEmailResponse',
+              'apiPhxaComMarsisActivitiesservice.DeleteEmailResponse_element'}
+            );
+            response_x = response_map_x.get('response_x');
+            return response_x.DeleteEmailResult;
         }
         public String GetEmailByActivityID(String activityID) {
             apiPhxaComMarsisActivitiesservice.GetEmailByActivityID_element request_x = new apiPhxaComMarsisActivitiesservice.GetEmailByActivityID_element();

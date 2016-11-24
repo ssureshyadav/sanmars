@@ -11,7 +11,7 @@ private class MarsTestSyncTasks
         tickler.MARSActivityType__c ='MT';
         
         //Validations Check
-        try{
+       /* try{
             insert tickler;
         }catch(Exception e){}
         tickler.MARSReccurenceId__c=1;
@@ -21,7 +21,7 @@ private class MarsTestSyncTasks
         tickler.MARSActivityId__c=1;
         try{
             insert tickler;
-        }catch(Exception e){}
+        }catch(Exception e){}*/
         
         //Tickler
         tickler.MARSActivityType__c =null;

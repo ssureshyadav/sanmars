@@ -51,10 +51,13 @@ global class MARSBatchActivityRetryBulkData implements Database.Batchable<sObjec
                         }else if(batchData.MarsBatchId__c.contains('CALL'))
                         {
                             service.DeleteCall(String.valueOf(batchData.MarsObjectId__c));
-                        }/*else if(batchData.MarsBatchId__c.contains('FIRMEVENT'))
+                        }else if(batchData.MarsBatchId__c.contains('REPNOTES'))
                         {
-                            service.DeleteFirmEvent(String.valueOf(batchData.MarsObjectId__c));
-                        }*/
+                            service.DeleteRepNotes(batchData.MarsObjectId__c);
+                        }else if(batchData.MarsBatchId__c.contains('EMAIL'))
+                        {
+                            service.DeleteEmail(batchData.MarsObjectId__c);
+                        }
                     }else
                     {
                         if(batchData.OperationType__c.startsWith('EVENT'))

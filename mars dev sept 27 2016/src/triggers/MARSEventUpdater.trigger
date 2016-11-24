@@ -7,7 +7,7 @@ trigger MARSEventUpdater on Event (before insert,before update,after insert,afte
     }
     
     List<MARSBatchDataStore__c> bulkLoad=new List<MARSBatchDataStore__c>();
-     if(Trigger.isBefore && !Trigger.isDelete)
+    if(Trigger.isBefore && !Trigger.isDelete)
     {
         System.debug(Trigger.new);
         //Mars Records Validations
@@ -28,6 +28,7 @@ trigger MARSEventUpdater on Event (before insert,before update,after insert,afte
                 {
                     evt.addError('Mars Activity Type Should not be specified');
                 }
+                evt.MARSChkUpdDesc__c = true;
             }else if(Trigger.isUpdate)
             {
                 if(Trigger.oldMap.get(evt.Id).MARSActivityId__c != null && evt.MARSActivityId__c != Trigger.oldMap.get(evt.Id).MARSActivityId__c)
@@ -44,6 +45,11 @@ trigger MARSEventUpdater on Event (before insert,before update,after insert,afte
                 {
                     evt.addError('Mars Activity Type Should not be Modified');
                 }
+                
+                if(Trigger.oldMap.get(evt.Id).Description != null && evt.Description != Trigger.oldMap.get(evt.Id).Description)
+                {
+                    evt.MARSChkUpdDesc__c = true;
+                }
             }
         }
     }
@@ -55,26 +61,36 @@ trigger MARSEventUpdater on Event (before insert,before update,after insert,afte
         for(Event evt:Trigger.old)
         {
             System.debug(evt.MarsReccurenceId__c);
-            if((evt.MarsReccurenceId__c != null && evt.IsRecurrence) || (evt.MarsActivityId__c != null && !evt.IsRecurrence))
+            System.debug(evt.WhoId);
+            if((evt.MarsReccurenceId__c != null && evt.IsRecurrence) || (evt.MarsActivityId__c != null && !evt.IsRecurrence) && evt.WhoId != null)
             {
-                if(evt.WhoId != null){
-                    if(Trigger.old.size() ==1)
+                if(Trigger.old.size() ==1)
+                {
+                    //Delete Call to mars
+                    if(evt.MarsActivityId__c != null)
                     {
-                        //Delete Call to mars
-                        if(evt.MarsActivityId__c != null)
+                        MarsActivityMISGateway.SyncDeleteActivity(String.valueOf(evt.MarsActivityId__c),'MEETING');
+                    }else if(evt.MarsReccurenceId__c != null)
+                    {
+                        MarsActivityMISGateway.SyncDeleteActivity(String.valueOf(evt.MarsReccurenceId__c),'RECURRENCE');
+                        List<Event> lstreccurEvent=[Select Id,MarsActivityId__c,MarsReccurenceId__c from Event where RecurrenceActivityId =: evt.Id AND MarsActivityId__c != null];
+                        if(!lstreccurEvent.isEmpty())
                         {
-                            MarsActivityMISGateway.SyncDeleteActivity(String.valueOf(evt.MarsActivityId__c),'MEETING');
-                        }else if(evt.MarsReccurenceId__c != null)
-                        {
-                            MarsActivityMISGateway.SyncDeleteActivity(String.valueOf(evt.MarsReccurenceId__c),'RECURRENCE');
+                            for(Event cEvent:lstreccurEvent)
+                            {
+                                MARSBatchDataStore__c MARSBatchDataStore = new MARSBatchDataStore__c(ApexComponentName__c = 'MarsEventUpdater', ApexComponentType__c = 'Apex Trigger',
+                                                                   MethodName__c = 'MarsEventUpdater', ErrorMessage__c = 'Bulk Delete',MarsObjectId__c =String.valueOf(cEvent.MarsActivityId__c == null ?cEvent.MarsReccurenceId__c:cEvent.MarsActivityId__c),
+                                                                   OperationType__c = 'EVENT_DELETE', NoOfRetry__c=0,MarsBatchId__c =cEvent.Id+String.valueOf(cEvent.MarsActivityId__c != null ?'MEETING':'RECURRENCE'));
+                                bulkLoad.add(MARSBatchDataStore);
+                            }
                         }
-                    }else{
-                        MARSBatchDataStore__c MARSBatchDataStore = new MARSBatchDataStore__c(ApexComponentName__c = 'MarsEventUpdater', ApexComponentType__c = 'Apex Trigger',
-                                                                   MethodName__c = 'MarsEventUpdater', ErrorMessage__c = 'Bulk Delete',MarsObjectId__c =String.valueOf(evt.MarsActivityId__c == null ?evt.MarsReccurenceId__c:evt.MarsActivityId__c),
-                                                                   OperationType__c = 'EVENT_DELETE', NoOfRetry__c=0,MarsBatchId__c =evt.Id+String.valueOf(evt.MarsActivityId__c != null ?'MEETING':'RECURRENCE'));
-                         bulkLoad.add(MARSBatchDataStore);
-                    }                
-                }
+                    }
+                }else{
+                    MARSBatchDataStore__c MARSBatchDataStore = new MARSBatchDataStore__c(ApexComponentName__c = 'MarsEventUpdater', ApexComponentType__c = 'Apex Trigger',
+                                                               MethodName__c = 'MarsEventUpdater', ErrorMessage__c = 'Bulk Delete',MarsObjectId__c =String.valueOf(evt.MarsActivityId__c == null ?evt.MarsReccurenceId__c:evt.MarsActivityId__c),
+                                                               OperationType__c = 'EVENT_DELETE', NoOfRetry__c=0,MarsBatchId__c =evt.Id+String.valueOf(evt.MarsActivityId__c != null ?'MEETING':'RECURRENCE'));
+                     bulkLoad.add(MARSBatchDataStore);
+                }                
             }else{
                 lstDelDataStore.add(evt.Id);
             }
@@ -115,7 +131,7 @@ trigger MARSEventUpdater on Event (before insert,before update,after insert,afte
         
         for(Event evt:Trigger.new)
         {
-            if(evt.WhoId != null && mapContact != null && mapContact.containsKey(evt.WhoId) && evt.WhatId == null) //Rep Events
+            if(evt.WhoId != null && mapContact != null && mapContact.containsKey(evt.WhoId)) //Rep Events // && evt.WhatId == null(For FirmEvents) 
             {
                 String objectName =String.valueOf(evt.WhoId.getSObjectType());
                 if(objectName == 'Contact')

@@ -492,18 +492,37 @@ global Class MARSActivityApexGateway{
         List<ACK> lstResponse=new List<ACK>();           
         try
         {
-            Map<String, List<Note>> marsRepNotes=MarsActivitySyncMessageParser.parseNotes(RepNotesXML);
+            Map<String, List<ContentNote>> marsRepNotes=MarsActivitySyncMessageParser.parseNotes(RepNotesXML);
+            List<ContentDocumentLink> listCDocumentLink=new List<ContentDocumentLink>();
             if(marsRepNotes.containsKey('Success'))
             {
-                List<Note> lstNote=marsRepNotes.get('Success');
+                List<ContentNote> lstNote=marsRepNotes.get('Success');
                 if(!lstNote.IsEmpty())
                 { 
+                    List<ContentNote> insNote=new List<ContentNote>();
+                    List<ContentNote> updNote=new List<ContentNote>();
+                    for(ContentNote chkNote:lstNote)
+                    {
+                        if(chkNote.Id != null)
+                        {
+                            updNote.add(chkNote);
+                        }else{
+                            insNote.add(chkNote);
+                        }
+                    }
                     //Bypassing the trigger                        
                     MarsActivityUtility.BYPASS_ALL_TRIGGER=true;
-                    List<Database.UpsertResult> result= Database.upsert(lstNote, false);
-    
-                    //Enable the trigger                        
-                    MarsActivityUtility.BYPASS_ALL_TRIGGER=false;                     
+                    List<Database.saveResult> result=new List<Database.saveResult>();
+                    if(!updNote.isEmpty())
+                    {
+                        result.addAll(Database.Update(updNote, false));
+                    }
+                    
+                    if(!insNote.isEmpty())
+                    {
+                        result.addAll(Database.insert(insNote, false));
+                    }
+                         
                     // looping the upsertcontacts results to get the salesforce ids and mars rep ids.
                     for(Integer i=0;i<result.size();i++)
                     {
@@ -512,6 +531,15 @@ global Class MARSActivityApexGateway{
                         {
                             // Assigning Salesforce ids to SFDCObjectId
                             objSFDCResponse.SFDCObjectId=result[i].Id;
+                            if(MARSActivityUtility.mapSFDCActivityId.containsKey(Decimal.valueOf(lstNote[i].Title)))
+                            {
+                                ContentDocumentLink link=new ContentDocumentLink();
+                                link.ContentDocumentId =result[i].Id;
+                                link.LinkedEntityId = MARSActivityUtility.mapSFDCActivityId.get(Decimal.valueOf(lstNote[i].Title));
+                                link.ShareType ='V';
+                                listCDocumentLink.add(link);
+                            }
+                            
                             // Assigning rep ids(EXTERNAL_ID__c in salesforce) to MarsObjectId
                             if(lstNote[i].Title != null)
                             {
@@ -534,11 +562,17 @@ global Class MARSActivityApexGateway{
                         // Adding the upsertresult object to list
                         lstResponse.add(objSFDCResponse);
                     }
+                    
+                    if(!listCDocumentLink.isEmpty())
+                    {
+                        List<Database.UpsertResult> cDocLinkresult= Database.upsert(listCDocumentLink, false);
+                    }
+                    MarsActivityUtility.BYPASS_ALL_TRIGGER=false;
                 }
             }
             if(marsRepNotes.containsKey('Errors'))
             {
-                List<Note> errorNote=marsRepNotes.get('Errors');
+                List<ContentNote> errorNote=marsRepNotes.get('Errors');
                 //if(errorProducts.size()>0)
                 if(!errorNote.IsEmpty())
                 {
@@ -549,7 +583,7 @@ global Class MARSActivityApexGateway{
                         objSFDCResponse.MarsObjectId='<![CDATA['+errorNote[i].Title+']]>';
                     }
                     objSFDCResponse.Result=false;
-                    objSFDCResponse.ErrorMessage=errorNote[i].body;
+                    objSFDCResponse.ErrorMessage=errorNote[i].Content.toString();
                     lstResponse.add(objSFDCResponse);
                     }
                 }

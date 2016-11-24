@@ -4,6 +4,7 @@ global class MARSActivityMISGateway{
     webservice static void SyncDeleteActivity(String marsactivityId,String objName) {
         try{        
             System.debug(marsactivityId);    
+            System.debug(objName);
             apiPhxaComMarsisActivitiesservice.ActivitiesServiceSoap service=MarsActivityUtility.populatedAuthServiceForActivities();
            /* if(objName =='FIRMEVENT')
             {
@@ -46,13 +47,21 @@ global class MARSActivityMISGateway{
                 }
             }
             
-            /*if(objName =='EMAIL')
+            if(objName =='REPNOTES')
             {
-                if(!service.DeleteMeeting(marsactivityId))
+                if(!service.DeleteRepNotes(marsactivityId))
                 {
-                    MarsActivityErrorLogging.createLog('MARSMISGateway' , 'Apex Class' , 'SyncDeleteActivity' , '', 'ACTIVITY_DELETE', null, null);
+                    MarsActivityErrorLogging.createLog('MARSMISGateway' , 'Apex Class' , 'SyncDeleteActivity' , '', 'ACTIVITY_DELETE', marsactivityId, marsactivityId+''+objName);
                 }
-            }*/
+            }
+            
+            if(objName =='EMAIL')
+            {
+                if(!service.DeleteEmail(marsactivityId))
+                {
+                    MarsActivityErrorLogging.createLog('MARSMISGateway' , 'Apex Class' , 'SyncDeleteActivity' , '', 'ACTIVITY_DELETE', marsactivityId, marsactivityId+''+objName);
+                }
+            }
             
         }catch(exception e){
             System.debug('Error Message:'+e.getMessage()+e.getStackTraceString());
@@ -90,7 +99,7 @@ global class MARSActivityMISGateway{
     webservice static void SyncNote(ID noteId,String objName) {
         try{        
                 
-            Note lstNote = MarsActivityDatabaseUtiltiy.getNoteById(noteId);
+            ContentNote lstNote = MarsActivityDatabaseUtiltiy.getNoteById(noteId);
             MARSActivityMISGateway.noteAtMARS(lstNote,objName);
         }catch(exception e){
             System.debug(e.getMessage()+e.getStackTraceString());
@@ -145,7 +154,7 @@ global class MARSActivityMISGateway{
             MarsActivityUtility.BYPASS_ALL_TRIGGER=false;
     }
     
-    private static void noteAtMARS(Note lstNote,String objName) {
+    private static void noteAtMARS(ContentNote lstNote,String objName) {
             
             String noteEnvelope = MarsActivityXMLEnvelopeBuilder.noteEnvelope(lstNote,objName);
             apiPhxaComMarsisActivitiesservice.ActivitiesServiceSoap service=MarsActivityUtility.populatedAuthServiceForActivities();

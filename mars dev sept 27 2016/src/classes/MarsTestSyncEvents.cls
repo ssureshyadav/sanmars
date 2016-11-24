@@ -11,14 +11,14 @@ private class MarsTestSyncEvents
         EventSubtype='Event',DurationInMinutes =60,ActivityDate = System.today());
         
         //Validations Check
-        meeting.MARSActivityType__c ='MT';
+       /* meeting.MARSActivityType__c ='MT';
         try{insert meeting;}catch(Exception e){}
         
         meeting.MARSReccurenceId__c=1;
         try{insert meeting;}catch(Exception e){}
 
         meeting.MARSActivityId__c=1;
-        try{insert meeting;}catch(Exception e){}
+        try{insert meeting;}catch(Exception e){}*/
         
         //Tickler
         meeting.MARSActivityType__c =null;
